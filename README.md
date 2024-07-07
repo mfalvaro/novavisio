@@ -1,0 +1,2 @@
+# novavisio
+django project novavisio
