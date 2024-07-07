@@ -1,0 +1,36 @@
+<!-- templates/home.html-->
+{% extends 'base.html' %}
+
+{% block title %}fma´s Home{% endblock %}
+<!-- Add additional CSS, img in static files -->
+{% load static %}
+
+{% block sidebar %}
+	<br>
+	<ul class="sidebar-nav">
+		<li><a href="{% url 'home' %}">Home</a></li>
+		<li><a href="{% url 'home_cNum' %}">Números Complexos</a></li>
+		<li>- Introdução</li>
+		<li>- Gráficos de funções complexas </li>
+		<li>- Estudo de funções complexas </li>
+		
+	</ul>
+{% endblock %}
+
+{% block content %}
+	<h2><a href="{% url 'home_cNum' %}">Números complexos</a></h2>
+	<p>Bem vindo ao Estudo dos <em>números complexos</em>!</p>
+	<h4>- Introdução:</h4>
+	<h4>- Funções de uma variável complexa estudadas</h4>
+	<br>
+{% endblock %}
+
+{% block content1 %}
+	<h2><a href="{% url 'home_cNum' %}">Números complexos</a></h2>
+	<p>Bem vindo ao Estudo dos <em>números complexos</em>!</p>
+	<h4>- Introdução:</h4>
+	<h4>- Funções de uma variável complexa estudadas</h4>
+	<br>
+{% endblock %}
+
+

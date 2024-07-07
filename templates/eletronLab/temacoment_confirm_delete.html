@@ -1,0 +1,21 @@
+<!-- templates/estudoa/temacoment_confirm_delete.html-->
+{% extends 'eletronLab/home_eLab.html' %}
+
+{% block content %}
+
+<h1>Apagar comentário sobre tema</h1>
+
+<p>Tem certeza que deseja apagar: {{ temacoment }}?</p>
+
+<form action="" method="POST">
+  {% csrf_token %}
+  <input type="submit" value="Sim, apagar.">
+</form>
+
+{% endblock %}
+
+{% block content1 %}
+	</br>
+	<p>Faça o login para acessar o conteúdo.</p>
+	</br>
+{% endblock %}

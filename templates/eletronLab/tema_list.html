@@ -1,0 +1,115 @@
+<!-- templates/estudoa/tema_list.html-->
+{% extends 'eletronLab/home_eLab.html' %}
+
+{% block title %}eLab Temas{% endblock %}
+
+{% block estilo %}
+	<style>
+		table {
+		  font-family: arial, sans-serif;
+		  border-collapse: collapse;
+		}
+		td, th {
+		  border: 1px solid black;
+		  text-align: center;
+		  padding: 8px;
+		}
+		tr:nth-child(even) {
+		  background-color: #dddddd;
+		}
+	</style>  
+{% endblock %}
+
+
+{% block content %}
+	<!-- Add additional CSS, img in static files -->
+	{% load static %}
+	<h4>Temas</h4>
+	<!-- verifica se foram passados dados da tabela pela variável tema_list -->
+	{% if tema_list %}
+		<form action="{% url 'temas' %}" method="get">
+			<div>
+				<ul>
+					<li>
+						<label for="semana">Semana:</label>
+						<input type="number" name="semana" id="semana" min="1" max="152" step="1" value={{ filtro_sem_url }} >
+					</li>
+					<li>
+						<label for="categoria">Categoria:</label>
+						<select id="categoria" name="categoria" >
+							{% for cat in filtro_cat_lst %}
+								{% if cat == filtro_cat_url %}
+									<option value="{{ cat }}" selected>{{ cat }}</option>
+								{% else %}
+									<option value="{{ cat }}">{{ cat }}</option>
+								{% endif %}
+							{% endfor %}
+						</select>
+					</li>
+				</ul>
+			</div>
+			<button type="submit">Filtrar</button>
+		</form>
+		</br>
+		<table>
+			<!-- Cabeçalho da tabela,com a implementação da classificação ascente e descente clicando no título ou na figurinha ao lado de qq das colunas da tabela) 
+			A lógica em views.py passa as variáveis sort_mapa1 até sort_mapa5 contendo o número da coluna, asc ou desc e classificado (0 ou 1), ex: '1a1', coluna 1 classificado asc ativo
+			Por enquanto só dá para classificar, asc ou desc, apenas uma coluna por vez
+			Nestas variáveis são aplicados filter |slice para configurar a url do link e a url das imagens, pequenas setas ao lado dos títulos	-->
+			<tr>
+				<th><a href="?col={{ sort_mapa1|slice:":2" }}{{ filtro_url }}">Semana </a>   <a href="?col={{ sort_mapa1|slice:":2" }}{{ filtro_url }}"><img src="{% static 'res/ordem' %}{{ sort_mapa1|slice:"1:" }}.jpg"></a></th>
+				<th><a href="?col={{ sort_mapa2|slice:":2" }}{{ filtro_url }}">Ordem </a>    <a href="?col={{ sort_mapa2|slice:":2" }}{{ filtro_url }}"><img src="{% static 'res/ordem' %}{{ sort_mapa2|slice:"1:" }}.jpg"></a></th>
+				<th><a href="?col={{ sort_mapa3|slice:":2" }}{{ filtro_url }}">Título </a>   <a href="?col={{ sort_mapa3|slice:":2" }}{{ filtro_url }}"><img src="{% static 'res/ordem' %}{{ sort_mapa3|slice:"1:" }}.jpg"></a></th>
+				<th><a href="?col={{ sort_mapa4|slice:":2" }}{{ filtro_url }}">Categoria </a><a href="?col={{ sort_mapa4|slice:":2" }}{{ filtro_url }}"><img src="{% static 'res/ordem' %}{{ sort_mapa4|slice:"1:" }}.jpg"></a></th>
+				<th><a href="?col={{ sort_mapa5|slice:":2" }}{{ filtro_url }}">Página </a>   <a href="?col={{ sort_mapa5|slice:":2" }}{{ filtro_url }}"><img src="{% static 'res/ordem' %}{{ sort_mapa5|slice:"1:" }}.jpg"></a></th>
+				<th><a href="?col={{ sort_mapa6|slice:":2" }}{{ filtro_url }}">Status </a>   <a href="?col={{ sort_mapa6|slice:":2" }}{{ filtro_url }}"><img src="{% static 'res/ordem' %}{{ sort_mapa6|slice:"1:" }}.jpg"></a></th>
+			</tr>
+			<!-- loop para as linhas da tabela criando um link para cada tema individual na coluna título -->
+			{% for t in tema_list %}
+				<tr>
+					<!-- <td>{{ t.codtema }}</td> -->
+					<td><a href="{{ t.get_absolute_url }}/update">{{ t.semana }}</a></td>
+					<td>{{ t.ordem }}</td>
+					<td><a href="{{ t.get_absolute_url }}">{{ t.titulo }}</a></td>
+					<td><a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/temas/tema{{ t.semana|stringformat:"02d" }}_{{ t.ordem }}.pdf">{{ t.categoria }}</a></td>
+					<td>{{ t.pagina }}</td>
+					<td>{{ t.status }}</td>
+				</tr>
+			{% endfor %}
+		</table>
+		</br>
+	{% else %}
+		<p>Não existem temas no lab.</p>
+	{% endif %}
+{% endblock %}
+
+{% block pagination %}
+	{% if is_paginated %}
+		<div class="pagination">
+			<span class="page-links">
+				{% if page_obj.has_previous %}
+					<a href="{{ request.path }}?page={{ page_obj.previous_page_number }}&col={{ sort_url }}{{ filtro_url }}">previous</a>
+				{% else %}
+					previous
+				{% endif %}
+				<span class="page-current">
+					Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+				</span>
+				{% if page_obj.has_next %}
+					<a href="{{ request.path }}?page={{ page_obj.next_page_number }}&col={{ sort_url }}{{ filtro_url }}">next</a>
+				{% else %}
+					next
+				{% endif %}
+			</span>
+		</div>
+		</br>
+		</br>
+
+	{% endif %}
+{% endblock %}
+
+{% block content1 %}
+	</br>
+	<p>Faça o login para acessar o conteúdo.</p>
+	</br>
+{% endblock %}

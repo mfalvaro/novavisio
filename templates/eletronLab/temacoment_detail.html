@@ -1,0 +1,59 @@
+<!-- templates/estudoa/temacoment_detail.html-->
+{% extends 'eletronLab/home_eLab.html' %}
+
+{% block title %}Comentário e Tema{% endblock %}
+
+{% block content %}
+  <h2>Tema & Comentário</h2>
+
+  <p><strong>Tema:</strong> <a href="{{ temacoment.tema.get_absolute_url }}">{{ temacoment.tema }} </a></p>
+  <p><strong>Comentário:</strong> <a href="{{ temacoment.coment.get_absolute_url }}">{{ temacoment.coment }}</a></p>
+  <p><strong>Data:</strong> {{ temacoment.data|date:"l, j \d\e F \d\e Y H:i"  }}</p>
+
+  <div style="margin-left:20px;margin-top:20px">
+    <h4>Outros comentários deste tema</h4>
+	  <ul>
+	  	{% if temacoment.tema.temacoment_set.count == 1 %} <!-- verifica se o tema só tem um comentário -->
+			 <p>Não há outros comentários associados a este tema.</p>
+		{% else %} <!-- caso o tema tenha mais de um comentário -->
+		{% for c in temacoment.tema.temacoment_set.all %}
+			{% if c.coment == temacoment.coment %}<!-- não inclui este comentário na lista de outros comentários-->
+			{% else %} <!-- inclui os outros comentários na lista-->
+			  <li>
+				<a href="{{ c.coment.get_absolute_url }}">{{ c.coment }}</a> 
+			  </li>
+			{% endif %}
+		{% endfor %}
+		{% endif %}
+	  </ul>
+  </div>
+  
+  <div style="margin-left:20px;margin-top:20px">
+    <h4>Outros temas associados a este comentário</h4>
+	  <ul>
+	  	{% if temacoment.coment.temacoment_set.count == 1 %} <!-- verifica se o comentário só tem um tema associado -->
+			 <p>Não há outros temas associados a este comentário.</p>
+		{% else %} <!-- caso o comentário tenha mais de um tema associado -->
+		{% for t in temacoment.coment.temacoment_set.all %}
+			{% if t.tema == temacoment.tema %}<!-- não inclui este tema na lista de outros temas-->
+			{% else %} <!-- inclui os outros temas na lista-->
+			  <li>
+				<a href="{{ t.tema.get_absolute_url }}">{{ t.tema }}</a> 
+			  </li>
+			{% endif %}
+		{% endfor %}
+		{% endif %}
+	  </ul>
+  </div>
+  <div>
+    <a href="{% url 'home' %}temacoment/create">Criar novo tema/coment...</a>
+  </div>
+  <div>
+    <a href="{{ temacoment.get_absolute_url }}/delete">Apagar este tema/coment...</a>
+  </div>
+  
+{% endblock %}
+
+{% block content1 %}
+	<p>Faça o login para acessar o conteúdo.</p>
+{% endblock %}

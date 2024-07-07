@@ -1,0 +1,18 @@
+<!-- templates/estudoa/coment_form.html-->
+{% extends 'eletronLab/home_eLab.html' %}
+
+{% block content %}
+  <form action="" method="post">
+    {% csrf_token %}
+    <table>
+    {{ form.as_table }}
+    </table>
+    <input type="submit" value="Salvar">
+  </form>
+{% endblock %}
+
+{% block content1 %}
+	</br>
+	<p>Faça o login para acessar o conteúdo.</p>
+	</br>
+{% endblock %}

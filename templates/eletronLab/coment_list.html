@@ -1,0 +1,113 @@
+<!-- templates/estudoa/coment_list.html-->
+{% extends 'eletronLab/home_eLab.html' %}
+
+{% block title %}eLab Cometários{% endblock %}
+
+{% block content %}
+  <h5>Comentários</h5>
+ 
+  <!-- FORMULÁRIO DE FILTRAGEM   *********************************************************************************************************************************** FORMULÁRIO DE FILTRAGEM -->
+	<form action="{% url 'coments' %}" method="get">
+		<div>
+			<ul>
+				<li>
+					<label for="assunto">Assunto:</label>
+					<select id="assunto" name="assunto">
+						{% for ass in filtro_ass_lst %}
+							{% if ass == filtro_ass_url %}
+								<option value="{{ ass }}" selected>{{ ass }}</option>
+							{% else %}
+								<option value="{{ ass }}">{{ ass }}</option>
+							{% endif %}
+						{% endfor %}
+					</select>
+					<!-- <datalist id="lista_ass">
+						{% for ass in filtro_ass_lst %}
+							<option value="{{ ass }}">{{ ass }}</option>
+						{% endfor %}
+					</datalist>
+					<input type="search" list="lista_ass" name="assunto" id="assunto" value={{ filtro_ass_url }}> -->
+				</li>
+				<li>
+					<label for="detalhe">Detalhe:</label>
+					<input type="text" name="detalhe" id="detalhe" value="{{ filtro_det_url }}" >
+				</li>
+			</ul>
+		</div>
+		<button type="submit">Filtrar</button>
+<!-- 		<p>filtro_det_url={{ filtro_det_url }}</p>
+		<p>filtro_url={{ filtro_url }}</p>
+		<p>comentlist_filtro_det={{ comentlist_filtro_det }}</p>
+		<p>url 'coments'={% url 'coments' %}</p> -->
+	
+	</form>
+  <!-- LISTA DE COMENTÁRIOS   ******************************************************************************************************************************************* LISTA DE COMENTÁRIOS -->
+  <!-- Verifica se a lista está vazia -->
+  {% if coment_list %}
+	<ul>
+    {% for c in coment_list %}
+		{% if c.assunto == 'outro tema' %}
+		  <li>
+			<a href="{{ c.get_absolute_url }}">{{ c.assunto }}</a> :: <a href="{% url 'outro_tema' %}?outrotema={{ c.detalhe }}">{{ c.detalhe }}</a>
+		  </li>	
+		{% elif c.assunto == 'ci' %}
+		  <li>
+			<a href="{{ c.get_absolute_url }}">{{ c.assunto }}</a> :: <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/ci/ci_{{ c.detalhe }}.jpg">{{ c.detalhe }}</a>
+		  </li>			
+		{% elif c.assunto == 'projeto' %}
+		  <li>
+			<a href="{{ c.get_absolute_url }}">{{ c.assunto }}</a> :: <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/projetos/{{ c.detalhe }}.jpg">{{ c.detalhe }}</a>
+		  </li>			
+		{% else %}
+		  <li>
+			<a href="{{ c.get_absolute_url }}">{{ c.assunto }}::{{ c.detalhe }}</a>
+		  </li>
+		{% endif %}	
+	
+    {% endfor %}
+   </ul>
+  {% else %}
+    <p>Não existem comentários no lab.</p>
+  {% endif %}
+{% endblock %}
+
+{% block pagination %}
+	{% if is_paginated %}
+		<div class="pagination">
+			<span class="page-links">
+				{% if page_obj.has_previous %}
+					<a href="{{ request.path }}?page={{ page_obj.previous_page_number }}{{ filtro_url }}">previous</a>
+				{% else %}
+					previous
+				{% endif %}
+				<span class="page-current">
+					Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+				</span>
+				{% if page_obj.has_next %}
+					<a href="{{ request.path }}?page={{ page_obj.next_page_number }}{{ filtro_url }}">next</a>
+				{% else %}
+					next
+				{% endif %}
+			</span>
+		</div>
+	{% endif %}
+{% endblock %}
+
+{% block content1a %}
+  <div>
+	<br>
+	<a href="{% url 'coments' %}create">Criar novo registro...</a>
+ </div>
+ </br>
+ </br>
+{% endblock %}
+
+
+
+{% block content1 %}
+	</br>
+	<p>Faça o login para acessar o conteúdo.</p>
+	</br>
+	
+{% endblock %}
+

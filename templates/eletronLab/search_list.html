@@ -1,0 +1,122 @@
+<!-- templates/estudoa/search_list.html-->
+{% extends 'eletronLab/home_eLab.html' %}
+
+{% block title %}eLab Procurar{% endblock %}
+{% block content %}
+	<!-- Add additional CSS, img in static files -->
+	{% load static %}
+<!--   <div>
+    <h1>       </h1>
+	<a href="{% url 'searchs' %}create">Criar novo tema/coment...</a>
+    <h1>       </h1>
+ </div> -->
+<br>
+<form action="{% url 'searchs' %}" method="get">
+	<div>
+		<label for="search">Procurar por:</label>
+		<input type="text" name="search" id="search" value="{{ filtro_search_url }}" >
+	</div>
+	<p style="color: gray;margin: 0px 0px 5px 20px;" ><em>Procura pelo termo nos títulos dos temas, nos assuntos e detalhes de comentários.</em></p>
+	<p style="color: gray;margin: 0px 0px 5px 20px;" ><em>As buscas pelos termos 'outro tema', 'projeto' e 'ci apresentam resultados especiais</em></p>
+	<p style="color: gray;margin: 0px 0px 5px 20px;" ><em>A busca por termos do tipo 'técnicas 11' retorna o respectivo tema</em></p>
+	<button type="submit">Procurar</button>
+</form>
+ {% if object_list %}
+	<br>
+	<h5>Encontrados em Temas ({{ page_obj.paginator.count }})</h5>
+	<ul>
+		{% for tc in object_list %}
+		  <li>
+			<a href="{{ tc.get_absolute_url }}">{{ tc.titulo }}</a> ({{ tc.semana }}.{{ tc.ordem }} - {{ tc.categoria }}, {{ tc.pagina }})<a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/temas/tema{{ tc.semana|stringformat:"02d" }}_{{ tc.ordem }}.pdf"><img src="{% static 'res/' %}download2.jpg"></a>
+		  </li>
+		{% endfor %}
+	</ul>
+	{% block pagination1 %}
+		{% if is_paginated %}
+			<div class="pagination">
+				<span class="page-links">
+					{% if page_obj.has_previous %}
+						<a href="{{ request.path }}?page2={{ page_obj2.number }}&page={{ page_obj.previous_page_number }}{{ filtro_url }}">previous</a>
+					{% else %}
+						previous
+					{% endif %}
+					<span class="page-current">
+						Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+					</span>
+					{% if page_obj.has_next %}
+						<a href="{{ request.path }}?page2={{ page_obj2.number }}&page={{ page_obj.next_page_number }}{{ filtro_url }}">next</a>
+					{% else %}
+						next
+					{% endif %}
+				</span>
+			</div>
+		{% endif %}
+	{% endblock %}
+  {% else %}
+	<br>
+	<h5>Encontrados em Temas (0)</h5>
+  {% endif %}
+  
+ {% if page_obj2.object_list %}
+	<br>
+	<h5>Encontrados em Comentários ({{ page_obj2.paginator.count }})</h5>
+	<ul>
+		{% for c in page_obj2.object_list %}
+			{% if c.assunto == 'outro tema' %}
+			  <li>
+				<a href="{{ c.get_absolute_url }}">{{ c.assunto }}</a> :: <a href="{% url 'outro_tema' %}?outrotema={{ c.detalhe }}">{{ c.detalhe }}</a>
+			  </li>	
+			{% elif c.assunto == 'ci' %}
+			  <li>
+				<a href="{{ c.get_absolute_url }}">{{ c.assunto }}</a> :: <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/ci/ci_{{ c.detalhe }}.jpg">{{ c.detalhe }}</a>
+			  </li>			
+			{% elif c.assunto == 'projeto' %}
+			  <li>
+				<a href="{{ c.get_absolute_url }}">{{ c.assunto }}</a> :: <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/projetos/{{ c.detalhe }}.jpg">{{ c.detalhe }}</a>
+			  </li>			
+		    {% else %}
+			  <li>
+				<a href="{{ c.get_absolute_url }}">{{ c.assunto }}::{{ c.detalhe }}</a>
+			  </li>
+			{% endif %}			
+		{% endfor %}
+	</ul>
+	{% block pagination2 %}
+		{% if page_obj2.has_other_pages %}
+			<div class="pagination">
+				<span class="page-links">
+					{% if page_obj2.has_previous %}
+						<a href="{{ request.path }}?page={{ page_obj.number }}&page2={{ page_obj2.previous_page_number }}{{ filtro_url }}">previous</a>
+					{% else %}
+						previous
+					{% endif %}
+					<span class="page-current">
+						Page {{ page_obj2.number }} of {{ page_obj2.paginator.num_pages }}
+					</span>
+					{% if page_obj2.has_next %}
+						<a href="{{ request.path }}?page={{ page_obj.number }}&page2={{ page_obj2.next_page_number }}{{ filtro_url }}">next</a>
+					{% else %}
+						next
+					{% endif %}
+				</span>
+			</div>
+		{% endif %}
+	{% endblock %}	
+	<br>
+	<br>
+  {% else %}
+	<br>
+	<h5>Encontrados em Comentários (0)</h5>
+	<br>
+	<br>
+  {% endif %}
+{% endblock %}
+
+<!-- {% block pagination %}
+{% endblock %} -->
+
+
+{% block content1 %}
+	<p>Faça o login para acessar o conteúdo.</p>
+{% endblock %}
+

@@ -1,0 +1,56 @@
+<!-- templates/estudoa/tema_detail.html-->
+{% extends 'eletronLab/home_eLab.html' %}
+
+{% block title %}eLab Tema {{ tema.codtema }}{% endblock %}
+
+{% block content %}
+  <!-- Add additional CSS, img in static files -->
+  {% load static %}
+  <h4>Tema: {{ tema.titulo }} <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/temas/tema{{ tema.semana|stringformat:"02d" }}_{{ tema.ordem }}.pdf"><img src="{% static 'res/' %}download.jpg"></a></h4>
+  <p><strong>Categoria:</strong> {{ tema.categoria }}, {{ tema.pagina }} </p> <!-- author detail link not yet defined -->
+  <p><strong>Semana:</strong> {{ tema.semana }}.{{ tema.ordem }}</p>
+
+  <div style="margin-left:20px;margin-top:20px">
+    <h5>Comentários</h5>
+	  <ul>
+		{% for tc in tema.temacoment_set.all %}
+			{% if tc.coment.assunto == 'outro tema' %}
+			  <li>
+				<a href="{{ tc.coment.get_absolute_url }}">{{ tc.coment.assunto }}</a> :: <a href="{% url 'outro_tema' %}?outrotema={{ tc.coment.detalhe }}">{{ tc.coment.detalhe }}</a> ({{ tc.data|date:"j/n/y - G:i" }}) <a href="{{ tc.get_absolute_url }}/delete/?tema={{ tema.codtema }}">  <img src="{% static 'res/' %}delete.png"></a>
+			  </li>
+			{% elif tc.coment.assunto == 'ci' %}
+			  <li>
+				<a href="{{ tc.coment.get_absolute_url }}">{{ tc.coment.assunto }}</a> :: <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/ci/ci_{{ tc.coment.detalhe }}.jpg">{{ tc.coment.detalhe }}</a> ({{ tc.data|date:"j/n/y - G:i" }}) <a href="{{ tc.get_absolute_url }}/delete/?tema={{ tema.codtema }}">  <img src="{% static 'res/' %}delete.png"></a>
+			  </li>			
+			{% elif tc.coment.assunto == 'projeto' %}
+			  <li>
+				<a href="{{ tc.coment.get_absolute_url }}">{{ tc.coment.assunto }}</a> :: <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/projetos/{{ tc.coment.detalhe }}.jpg">{{ tc.coment.detalhe }}</a> ({{ tc.data|date:"j/n/y - G:i" }}) <a href="{{ tc.get_absolute_url }}/delete/?tema={{ tema.codtema }}">  <img src="{% static 'res/' %}delete.png"></a>
+			  </li>			
+		    {% else %}
+			  <li>
+				<a href="{{ tc.coment.get_absolute_url }}">{{ tc.coment.assunto }} :: {{ tc.coment.detalhe }}</a> ({{ tc.data|date:"j/n/y - G:i" }}) <a href="{{ tc.get_absolute_url }}/delete/?tema={{ tema.codtema }}">  <img src="{% static 'res/' %}delete.png"></a>
+			  </li>
+			{% endif %}
+			{% empty %}
+			  <p>Não há comentários para este tema.</p>
+		{% endfor %}
+	  </ul>
+  </div>
+  <div>
+    <a href="{{ tema.get_absolute_url }}/update">Editar tema...</a>
+  </div>
+  <div >
+    <a href="{% url 'home_eLab' %}temacoments/create/?tema={{ tema.codtema }}">Criar tema/coment existente...</a>
+  </div>
+   <div id="fim_de_pagina1">
+    <a href="{% url 'coments' %}create/?tema={{ tema.codtema }}&coment=criar">Criar tema/coment novo...</a>
+	<br>
+	<br>
+  </div>
+ 
+{% endblock %}
+
+{% block content1 %}
+	<p>Faça o login para acessar o conteúdo.</p>
+{% endblock %}
+

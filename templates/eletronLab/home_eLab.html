@@ -1,0 +1,101 @@
+<!-- templates/eletronLab/home_elab.html-->
+{% extends 'base.html' %}
+
+{% block title %}Nova Visio Home{% endblock %}
+<!-- Add additional CSS, img in static files -->
+{% load static %}
+
+{% block sidebar %}
+	<br>
+	<ul class="sidebar-nav">
+		<li><a href="{% url 'home' %}">Home</a></li>
+		{% if user.is_authenticated %}
+			<li><a href="{% url 'home_eLab' %}">Laboratório de Eletrônica</a></li>
+			<li><a href="{% url 'temas' %}">-  Temas</a></li>
+			<li><a href="{% url 'coments' %}">-  Comentários</a></li>
+			<li><a href="{% url 'searchs' %}">-  Procurar</a></li>
+			<br>
+			<li>User: {{ user.get_username }}</li>
+			<li><a href="{% url 'logout' %}">-Logout-</a></li>
+		{% else %}
+			<br>
+			<li><a href="{% url 'login' %}">Login</a></li>
+		{% endif %}
+	</ul>
+{% endblock %}
+
+{% block content %}
+	<h2>Laboratório de Eletrônica </h2>
+	<p>Bem vindo ao Laboratório de Eletrônica <em>GPS Geo</em>!</p>
+	<h3>Informativos</h3>
+	<p>Banco de dados:</p>
+	<ul>
+	<li><strong>Server:</strong> {{ db_server }}</li>
+	<li><strong>Banco de dados:</strong> {{ db_db }}</li>
+	</ul>
+	<p>O Laboratório está com os seguintes números:</p>
+	<ul>
+	<li><strong>Total de temas:</strong> {{ num_temas }}</li>
+	<li><strong>Temas estudados:</strong> {{ num_temas_estudados }}</li>
+	<li><strong>Percentual de temas estudados:</strong> {{ percentual_temas_estudados }}</li>
+	<li><strong>Comentários:</strong> {{ num_coments }}</li>
+	<li><strong>Número de assuntos comentados:</strong> {{ num_assuntos }}</li>
+	<li><strong>Número de ci´s estudados:</strong> {{ num_cis }}</li>
+	</ul>
+	<p><span id="parag1">Circuitos integrados estudados</span> 
+		<span>&nbsp;&nbsp;&nbsp;</span>
+		<span id="parag2"><a href="{% url 'ci_create' %}">Adicionar ci...</a></span>
+	</p>
+	{% if cis %}
+		<ol>
+		{% for ci in cis %}
+			<li>
+			Semana {{ ci.semana }} | <a href="{{ ci.coment.get_absolute_url }}">{{ ci.codci }}</a> - {{ ci.sobre }}<a href="{{ ci.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a><a href="{{ ci.get_absolute_url }}/delete">  <img src="{% static 'res/' %}delete.png"></a>
+			</li>
+		{% endfor %}
+		</ol>
+		{% else %}
+		<p>Não existem ci´s no lab.</p>
+	{% endif %}
+	</br>
+	<p>Número acessos a este link: {{ num_visits }} click{{ num_visits|pluralize }}</p>
+	<p>You have visited this page {{ num_visits }} time{{ num_visits|pluralize }}.</p>
+{% endblock %}
+{% block content1 %}
+	<h2>Laboratório de Eletrônica </h2>
+	<p>Bem vindo ao Laboratório de Eletrônica <em>GPS Geo</em>!</p>
+	<h3>Informativos</h3>
+	<p>Banco de dados:</p>
+	<ul>
+	<li><strong>Server:</strong> {{ db_server }}</li>
+	<li><strong>Banco de dados:</strong> {{ db_db }}</li>
+	</ul>
+	<p>O Laboratório está com os seguintes números:</p>
+	<ul>
+	<li><strong>Total de temas:</strong> {{ num_temas }}</li>
+	<li><strong>Temas estudados:</strong> {{ num_temas_estudados }}</li>
+	<li><strong>Percentual de temas estudados:</strong> {{ percentual_temas_estudados }}</li>
+	<li><strong>Comentários:</strong> {{ num_temacoments }}</li>
+	<li><strong>Número de assuntos comentados:</strong> {{ num_assuntos }}</li>
+	<li><strong>Número de ci´s estudados:</strong> {{ num_cis }}</li>
+	</ul>
+	<p id="parag1">Circuitos integrados estudados</p>
+	{% if cis %}
+		<ol>
+		{% for ci in cis %}
+			<li>
+			Semana {{ ci.semana }} | <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/ci/ci_{{ ci.codci }}.jpg">{{ ci.codci }}</a> - {{ ci.sobre }}
+			</li>
+		{% endfor %}
+		</ol>
+	{% else %}
+		<p>Não existem ci´s no lab.</p>
+	{% endif %}
+	</br>
+	<p>Número acessos a este link: {{ num_visits }} click{{ num_visits|pluralize }}</p>
+	<p>You have visited this page {{ num_visits }} time{{ num_visits|pluralize }}.</p>
+{% endblock %}
+  
+
+
+
