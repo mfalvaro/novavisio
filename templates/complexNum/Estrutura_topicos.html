@@ -1,0 +1,556 @@
+<!-- templates/home.html-->
+{% extends 'base.html' %}
+
+{% block title %}fma´s Home{% endblock %}
+<!-- Add additional CSS, img in static files -->
+{% load static %}
+
+{% block sidebar %}
+	<br>
+	<ul class="sidebar-nav">
+		<li><a href="{% url 'home' %}">Home</a></li>
+		<li><a href="{% url 'home_cNum' %}">Números Complexos</a></li>
+		<li><a href="{% url 'topicos_cNum' %}">- números e funções</a></li>
+		<li><a href="{% url 'home_cNum' %}">- gráficos 2D e 3D convencionais</a></li>
+		<li><a href="{% url 'home_cNum' %}">- gráficos 3D e 4D de funções complexas</a></li>
+		<li><a href="{% url 'home_cNum' %}">- funções complexas estudadas</a></li>
+		
+	</ul>
+{% endblock %}
+
+{% block content %}
+<div class=WordSection1>
+
+<p class=Comum align=center style='text-align:center;mso-outline-level:5'><b
+style='mso-bidi-font-weight:normal'><span lang=PT style='mso-ansi-language:
+PT'>Indice</span></b><span lang=PT style='mso-ansi-language:PT'><o:p></o:p></span></p>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoToc1 style='tab-stops:right dotted 509.75pt'><!--[if supportFields]><span
+lang=PT><span style='mso-element:field-begin'></span><span
+style='mso-spacerun:yes'> </span>TOC \o &quot;1-3&quot; \h \z \u <span
+style='mso-element:field-separator'></span></span><![endif]--><span lang=PT><span
+class=MsoHyperlink><span style='mso-no-proof:yes'><a href="#_Toc171777079">1 -
+MATEMÁTICA DE FUNÇÕES DE UMA VARIÁVEL COMPLEXA<span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-tab-count:1 dotted'>.. </span></span><!--[if supportFields]><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-element:field-begin'></span></span><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'> PAGEREF _Toc171777079 \h </span><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-separator'></span></span><![endif]--><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'>1</span><span style='color:windowtext;display:none;
+mso-hide:screen;text-decoration:none;text-underline:none'><!--[if gte mso 9]><xml>
+ <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F0054006F0063003100370031003700370037003000370039000000</w:data>
+</xml><![endif]--></span><!--[if supportFields]><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-end'></span></span><![endif]--></a></span></span></span><span
+style='font-size:11.0pt;font-family:"Calibri","sans-serif";mso-bidi-font-family:
+"Times New Roman";mso-ansi-language:PT-BR;mso-no-proof:yes'><o:p></o:p></span></p>
+
+<p class=MsoToc2 style='tab-stops:right dotted 509.75pt'><span
+class=MsoHyperlink><span lang=PT style='mso-no-proof:yes'><a
+href="#_Toc171777080">1.1 - Conceitos e questões sobre a matemática e sua
+representação gráfica<span style='color:windowtext;display:none;mso-hide:screen;
+text-decoration:none;text-underline:none'><span style='mso-tab-count:1 dotted'>. </span></span><!--[if supportFields]><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-element:field-begin'></span></span><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'> PAGEREF _Toc171777080 \h </span><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-separator'></span></span><![endif]--><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'>1</span><span style='color:windowtext;display:none;
+mso-hide:screen;text-decoration:none;text-underline:none'><!--[if gte mso 9]><xml>
+ <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F0054006F0063003100370031003700370037003000380030000000</w:data>
+</xml><![endif]--></span><!--[if supportFields]><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-end'></span></span><![endif]--></a></span></span><span
+style='font-size:11.0pt;font-family:"Calibri","sans-serif";mso-bidi-font-family:
+"Times New Roman";mso-ansi-language:PT-BR;mso-no-proof:yes'><o:p></o:p></span></p>
+
+<p class=MsoToc3 style='tab-stops:right dotted 509.75pt'><span
+class=MsoHyperlink><span lang=PT style='mso-no-proof:yes'><a
+href="#_Toc171777081">1.1.1 - Sistemas de contagem<span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-tab-count:1 dotted'>.. </span></span><!--[if supportFields]><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-element:field-begin'></span></span><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'> PAGEREF _Toc171777081 \h </span><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-separator'></span></span><![endif]--><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'>1</span><span style='color:windowtext;display:none;
+mso-hide:screen;text-decoration:none;text-underline:none'><!--[if gte mso 9]><xml>
+ <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F0054006F0063003100370031003700370037003000380031000000</w:data>
+</xml><![endif]--></span><!--[if supportFields]><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-end'></span></span><![endif]--></a></span></span><span
+style='font-size:11.0pt;font-family:"Calibri","sans-serif";mso-bidi-font-family:
+"Times New Roman";mso-ansi-language:PT-BR;mso-no-proof:yes'><o:p></o:p></span></p>
+
+<p class=MsoToc3 style='tab-stops:right dotted 509.75pt'><span
+class=MsoHyperlink><span lang=PT style='mso-no-proof:yes'><a
+href="#_Toc171777082">1.1.2 - Os números decimais e sua representação<span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-tab-count:1 dotted'>. </span></span><!--[if supportFields]><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-element:field-begin'></span></span><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'> PAGEREF _Toc171777082 \h </span><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-separator'></span></span><![endif]--><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'>1</span><span style='color:windowtext;display:none;
+mso-hide:screen;text-decoration:none;text-underline:none'><!--[if gte mso 9]><xml>
+ <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F0054006F0063003100370031003700370037003000380032000000</w:data>
+</xml><![endif]--></span><!--[if supportFields]><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-end'></span></span><![endif]--></a></span></span><span
+style='font-size:11.0pt;font-family:"Calibri","sans-serif";mso-bidi-font-family:
+"Times New Roman";mso-ansi-language:PT-BR;mso-no-proof:yes'><o:p></o:p></span></p>
+
+<p class=MsoToc3 style='tab-stops:right dotted 509.75pt'><span
+class=MsoHyperlink><span lang=PT style='mso-no-proof:yes'><a
+href="#_Toc171777083">1.1.3 - Medidas de distâncias e ângulos<span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-tab-count:1 dotted'> </span></span><!--[if supportFields]><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-element:field-begin'></span></span><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'> PAGEREF _Toc171777083 \h </span><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-separator'></span></span><![endif]--><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'>2</span><span style='color:windowtext;display:none;
+mso-hide:screen;text-decoration:none;text-underline:none'><!--[if gte mso 9]><xml>
+ <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F0054006F0063003100370031003700370037003000380033000000</w:data>
+</xml><![endif]--></span><!--[if supportFields]><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-end'></span></span><![endif]--></a></span></span><span
+style='font-size:11.0pt;font-family:"Calibri","sans-serif";mso-bidi-font-family:
+"Times New Roman";mso-ansi-language:PT-BR;mso-no-proof:yes'><o:p></o:p></span></p>
+
+<p class=MsoToc3 style='tab-stops:right dotted 509.75pt'><span
+class=MsoHyperlink><span lang=PT style='mso-no-proof:yes'><a
+href="#_Toc171777084">1.1.4 - A matemática e a natureza<span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-tab-count:1 dotted'>. </span></span><!--[if supportFields]><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-element:field-begin'></span></span><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'> PAGEREF _Toc171777084 \h </span><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-separator'></span></span><![endif]--><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'>2</span><span style='color:windowtext;display:none;
+mso-hide:screen;text-decoration:none;text-underline:none'><!--[if gte mso 9]><xml>
+ <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F0054006F0063003100370031003700370037003000380034000000</w:data>
+</xml><![endif]--></span><!--[if supportFields]><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-end'></span></span><![endif]--></a></span></span><span
+style='font-size:11.0pt;font-family:"Calibri","sans-serif";mso-bidi-font-family:
+"Times New Roman";mso-ansi-language:PT-BR;mso-no-proof:yes'><o:p></o:p></span></p>
+
+<p class=MsoToc3 style='tab-stops:right dotted 509.75pt'><span
+class=MsoHyperlink><span lang=PT style='mso-no-proof:yes'><a
+href="#_Toc171777085">1.1.5 - O infinito e o infinitésimo<span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-tab-count:1 dotted'>. </span></span><!--[if supportFields]><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-element:field-begin'></span></span><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'> PAGEREF _Toc171777085 \h </span><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-separator'></span></span><![endif]--><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'>2</span><span style='color:windowtext;display:none;
+mso-hide:screen;text-decoration:none;text-underline:none'><!--[if gte mso 9]><xml>
+ <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F0054006F0063003100370031003700370037003000380035000000</w:data>
+</xml><![endif]--></span><!--[if supportFields]><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-end'></span></span><![endif]--></a></span></span><span
+style='font-size:11.0pt;font-family:"Calibri","sans-serif";mso-bidi-font-family:
+"Times New Roman";mso-ansi-language:PT-BR;mso-no-proof:yes'><o:p></o:p></span></p>
+
+<p class=MsoToc3 style='tab-stops:right dotted 509.75pt'><span
+class=MsoHyperlink><span lang=PT style='mso-no-proof:yes'><a
+href="#_Toc171777086">1.1.6 - Simetrias<span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-tab-count:1 dotted'> </span></span><!--[if supportFields]><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-element:field-begin'></span></span><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'> PAGEREF _Toc171777086 \h </span><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-separator'></span></span><![endif]--><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'>2</span><span style='color:windowtext;display:none;
+mso-hide:screen;text-decoration:none;text-underline:none'><!--[if gte mso 9]><xml>
+ <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F0054006F0063003100370031003700370037003000380036000000</w:data>
+</xml><![endif]--></span><!--[if supportFields]><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-end'></span></span><![endif]--></a></span></span><span
+style='font-size:11.0pt;font-family:"Calibri","sans-serif";mso-bidi-font-family:
+"Times New Roman";mso-ansi-language:PT-BR;mso-no-proof:yes'><o:p></o:p></span></p>
+
+<p class=MsoToc3 style='tab-stops:right dotted 509.75pt'><span
+class=MsoHyperlink><span lang=PT style='mso-no-proof:yes'><a
+href="#_Toc171777087">1.1.7 - Funções, equações e gráficos<span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-tab-count:1 dotted'> </span></span><!--[if supportFields]><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-element:field-begin'></span></span><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'> PAGEREF _Toc171777087 \h </span><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-separator'></span></span><![endif]--><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'>2</span><span style='color:windowtext;display:none;
+mso-hide:screen;text-decoration:none;text-underline:none'><!--[if gte mso 9]><xml>
+ <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F0054006F0063003100370031003700370037003000380037000000</w:data>
+</xml><![endif]--></span><!--[if supportFields]><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-end'></span></span><![endif]--></a></span></span><span
+style='font-size:11.0pt;font-family:"Calibri","sans-serif";mso-bidi-font-family:
+"Times New Roman";mso-ansi-language:PT-BR;mso-no-proof:yes'><o:p></o:p></span></p>
+
+<p class=MsoToc3 style='tab-stops:right dotted 509.75pt'><span
+class=MsoHyperlink><span lang=PT style='mso-no-proof:yes'><a
+href="#_Toc171777088">1.1.8 - Simetrias<span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-tab-count:1 dotted'> </span></span><!--[if supportFields]><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-element:field-begin'></span></span><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'> PAGEREF _Toc171777088 \h </span><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-separator'></span></span><![endif]--><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'>2</span><span style='color:windowtext;display:none;
+mso-hide:screen;text-decoration:none;text-underline:none'><!--[if gte mso 9]><xml>
+ <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F0054006F0063003100370031003700370037003000380038000000</w:data>
+</xml><![endif]--></span><!--[if supportFields]><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-end'></span></span><![endif]--></a></span></span><span
+style='font-size:11.0pt;font-family:"Calibri","sans-serif";mso-bidi-font-family:
+"Times New Roman";mso-ansi-language:PT-BR;mso-no-proof:yes'><o:p></o:p></span></p>
+
+<p class=MsoToc2 style='tab-stops:right dotted 509.75pt'><span
+class=MsoHyperlink><span lang=PT style='mso-no-proof:yes'><a
+href="#_Toc171777089">1.2 - Método para geração de gráficos 3D e 4D de funções
+complexas<span style='color:windowtext;display:none;mso-hide:screen;text-decoration:
+none;text-underline:none'><span style='mso-tab-count:1 dotted'> </span></span><!--[if supportFields]><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-element:field-begin'></span></span><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'> PAGEREF _Toc171777089 \h </span><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-separator'></span></span><![endif]--><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'>2</span><span style='color:windowtext;display:none;
+mso-hide:screen;text-decoration:none;text-underline:none'><!--[if gte mso 9]><xml>
+ <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F0054006F0063003100370031003700370037003000380039000000</w:data>
+</xml><![endif]--></span><!--[if supportFields]><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-end'></span></span><![endif]--></a></span></span><span
+style='font-size:11.0pt;font-family:"Calibri","sans-serif";mso-bidi-font-family:
+"Times New Roman";mso-ansi-language:PT-BR;mso-no-proof:yes'><o:p></o:p></span></p>
+
+<p class=MsoToc2 style='tab-stops:right dotted 509.75pt'><span
+class=MsoHyperlink><span lang=PT style='mso-no-proof:yes'><a
+href="#_Toc171777090">1.3 - O círculo unitário e a hipérbole equilátera<span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-tab-count:1 dotted'>. </span></span><!--[if supportFields]><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-element:field-begin'></span></span><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'> PAGEREF _Toc171777090 \h </span><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-separator'></span></span><![endif]--><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'>2</span><span style='color:windowtext;display:none;
+mso-hide:screen;text-decoration:none;text-underline:none'><!--[if gte mso 9]><xml>
+ <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F0054006F0063003100370031003700370037003000390030000000</w:data>
+</xml><![endif]--></span><!--[if supportFields]><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-end'></span></span><![endif]--></a></span></span><span
+style='font-size:11.0pt;font-family:"Calibri","sans-serif";mso-bidi-font-family:
+"Times New Roman";mso-ansi-language:PT-BR;mso-no-proof:yes'><o:p></o:p></span></p>
+
+<p class=MsoToc2 style='tab-stops:right dotted 509.75pt'><span
+class=MsoHyperlink><span lang=PT style='mso-no-proof:yes'><a
+href="#_Toc171777091">1.4 - Funções trigonométricas circulares e hiperbólicas,
+e a função exponencial<span style='color:windowtext;display:none;mso-hide:screen;
+text-decoration:none;text-underline:none'><span style='mso-tab-count:1 dotted'> </span></span><!--[if supportFields]><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-element:field-begin'></span></span><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'> PAGEREF _Toc171777091 \h </span><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-separator'></span></span><![endif]--><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'>2</span><span style='color:windowtext;display:none;
+mso-hide:screen;text-decoration:none;text-underline:none'><!--[if gte mso 9]><xml>
+ <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F0054006F0063003100370031003700370037003000390031000000</w:data>
+</xml><![endif]--></span><!--[if supportFields]><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-end'></span></span><![endif]--></a></span></span><span
+style='font-size:11.0pt;font-family:"Calibri","sans-serif";mso-bidi-font-family:
+"Times New Roman";mso-ansi-language:PT-BR;mso-no-proof:yes'><o:p></o:p></span></p>
+
+<p class=MsoToc2 style='tab-stops:right dotted 509.75pt'><span
+class=MsoHyperlink><span lang=PT style='mso-no-proof:yes'><a
+href="#_Toc171777092">1.5 - Equação de Euler e os círculos imaginários<span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-tab-count:1 dotted'> </span></span><!--[if supportFields]><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'><span style='mso-element:field-begin'></span></span><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'> PAGEREF _Toc171777092 \h </span><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-separator'></span></span><![endif]--><span
+style='color:windowtext;display:none;mso-hide:screen;text-decoration:none;
+text-underline:none'>2</span><span style='color:windowtext;display:none;
+mso-hide:screen;text-decoration:none;text-underline:none'><!--[if gte mso 9]><xml>
+ <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F0054006F0063003100370031003700370037003000390032000000</w:data>
+</xml><![endif]--></span><!--[if supportFields]><span style='color:windowtext;
+display:none;mso-hide:screen;text-decoration:none;text-underline:none'><span
+style='mso-element:field-end'></span></span><![endif]--></a></span></span><span
+style='font-size:11.0pt;font-family:"Calibri","sans-serif";mso-bidi-font-family:
+"Times New Roman";mso-ansi-language:PT-BR;mso-no-proof:yes'><o:p></o:p></span></p>
+
+<p class=Comum><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]--><o:p>&nbsp;</o:p></p>
+
+<p class=Comum><o:p>&nbsp;</o:p></p>
+
+<h1 style='text-indent:0cm'><a name="_Toc171777079"><![if !supportLists]><span
+lang=PT><span style='mso-list:Ignore'>1 - </span></span><![endif]><span
+lang=PT>MATEMÁTICA DE FUNÇÕES DE UMA VARIÁVEL COMPLEXA</span></a></h1>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h2 style='margin-left:1.0cm;text-indent:0cm'><a name="_Toc171777080"><![if !supportLists]><span
+lang=PT><span style='mso-list:Ignore'>1.1 - </span></span><![endif]><span
+lang=PT>Conceitos e questões sobre a matemática e sua representação gráfica</span></a></h2>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h3 style='text-indent:0cm'><a name="_Toc171777081"><![if !supportLists]><span
+lang=PT><span style='mso-list:Ignore'>1.1.1 - </span></span><![endif]><span
+lang=PT>Sistemas de contagem</span></a></h3>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'>Decimal, binário,
+romano, hexadecimal, sexagesimal, devem existir muitos mais...<o:p></o:p></span></p>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h3 style='text-indent:0cm'><a name="_Toc171777082"><![if !supportLists]><span
+lang=PT><span style='mso-list:Ignore'>1.1.2 - </span></span><![endif]><span
+lang=PT>Os números decimais e sua representação</span></a></h3>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h4 style='margin-left:1.5cm;text-indent:0cm;mso-text-indent-alt:2.0cm'><![if !supportLists]><span
+lang=PT style='font-family:Wingdings;mso-fareast-font-family:Wingdings;
+mso-bidi-font-family:Wingdings;font-weight:normal'><span style='mso-list:Ignore'><span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Ø</span></span><![endif]><span
+lang=PT>Naturais e o zero</span></h4>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h4 style='margin-left:1.5cm;text-indent:0cm;mso-text-indent-alt:2.0cm'><![if !supportLists]><span
+lang=PT style='font-family:Wingdings;mso-fareast-font-family:Wingdings;
+mso-bidi-font-family:Wingdings;font-weight:normal'><span style='mso-list:Ignore'><span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Ø</span></span><![endif]><span
+lang=PT>Inteiros positivos e negativos</span></h4>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h4 style='margin-left:1.5cm;text-indent:0cm;mso-text-indent-alt:2.0cm'><![if !supportLists]><span
+lang=PT style='font-family:Wingdings;mso-fareast-font-family:Wingdings;
+mso-bidi-font-family:Wingdings;font-weight:normal'><span style='mso-list:Ignore'><span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Ø</span></span><![endif]><span
+lang=PT>Racionais</span></h4>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h4 style='margin-left:1.5cm;text-indent:0cm;mso-text-indent-alt:2.0cm'><![if !supportLists]><span
+lang=PT style='font-family:Wingdings;mso-fareast-font-family:Wingdings;
+mso-bidi-font-family:Wingdings;font-weight:normal'><span style='mso-list:Ignore'><span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Ø</span></span><![endif]><span
+lang=PT>Irracionais</span></h4>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h4 style='margin-left:1.5cm;text-indent:0cm;mso-text-indent-alt:2.0cm'><![if !supportLists]><span
+lang=PT style='font-family:Wingdings;mso-fareast-font-family:Wingdings;
+mso-bidi-font-family:Wingdings;font-weight:normal'><span style='mso-list:Ignore'><span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Ø</span></span><![endif]><span
+lang=PT>Reais e a reta real</span></h4>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h4 style='margin-left:1.5cm;text-indent:0cm;mso-text-indent-alt:2.0cm'><![if !supportLists]><span
+lang=PT style='font-family:Wingdings;mso-fareast-font-family:Wingdings;
+mso-bidi-font-family:Wingdings;font-weight:normal'><span style='mso-list:Ignore'><span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Ø</span></span><![endif]><span
+lang=PT>Complexos e o plano de Argand-Gauss</span></h4>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h4 style='margin-left:1.5cm;text-indent:0cm;mso-text-indent-alt:2.0cm'><![if !supportLists]><span
+lang=PT style='font-family:Wingdings;mso-fareast-font-family:Wingdings;
+mso-bidi-font-family:Wingdings;font-weight:normal'><span style='mso-list:Ignore'><span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Ø</span></span><![endif]><span
+lang=PT>Além dos complexos</span></h4>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h3 style='text-indent:0cm'><a name="_Toc171777083"><![if !supportLists]><span
+lang=PT><span style='mso-list:Ignore'>1.1.3 - </span></span><![endif]><span
+lang=PT>Medidas de distâncias e ângulos</span></a></h3>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h3 style='text-indent:0cm'><a name="_Toc171777084"><![if !supportLists]><span
+lang=PT><span style='mso-list:Ignore'>1.1.4 - </span></span><![endif]><span
+lang=PT>A matemática e a natureza</span></a></h3>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'>Questões filosóficas
+sobre a matemática<o:p></o:p></span></p>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h3 style='text-indent:0cm'><a name="_Toc171777085"><![if !supportLists]><span
+lang=PT><span style='mso-list:Ignore'>1.1.5 - </span></span><![endif]><span
+lang=PT>O infinito e o infinitésimo</span></a></h3>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'>Questões filosóficas
+sobre a matemática<o:p></o:p></span></p>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h3 style='text-indent:0cm'><a name="_Toc171777086"><![if !supportLists]><span
+lang=PT><span style='mso-list:Ignore'>1.1.6 - </span></span><![endif]><span
+lang=PT>Simetrias</span></a></h3>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h4 style='margin-left:1.5cm;text-indent:0cm;mso-text-indent-alt:2.0cm'><![if !supportLists]><span
+lang=PT style='font-family:Wingdings;mso-fareast-font-family:Wingdings;
+mso-bidi-font-family:Wingdings;font-weight:normal'><span style='mso-list:Ignore'><span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Ø</span></span><![endif]><span
+lang=PT>Eixos e planos de simetria</span></h4>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h4 style='margin-left:1.5cm;text-indent:0cm;mso-text-indent-alt:2.0cm'><![if !supportLists]><span
+lang=PT style='font-family:Wingdings;mso-fareast-font-family:Wingdings;
+mso-bidi-font-family:Wingdings;font-weight:normal'><span style='mso-list:Ignore'><span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Ø</span></span><![endif]><span
+lang=PT>Funções recíprocas</span></h4>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h4 style='margin-left:1.5cm;text-indent:0cm;mso-text-indent-alt:2.0cm'><![if !supportLists]><span
+lang=PT style='font-family:Wingdings;mso-fareast-font-family:Wingdings;
+mso-bidi-font-family:Wingdings;font-weight:normal'><span style='mso-list:Ignore'><span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Ø</span></span><![endif]><span
+lang=PT>Funções inversas</span></h4>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h4 style='margin-left:1.5cm;text-indent:0cm;mso-text-indent-alt:2.0cm'><![if !supportLists]><span
+lang=PT style='font-family:Wingdings;mso-fareast-font-family:Wingdings;
+mso-bidi-font-family:Wingdings;font-weight:normal'><span style='mso-list:Ignore'><span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Ø</span></span><![endif]><span
+lang=PT>Rotação horária e anti-horária</span></h4>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h3 style='text-indent:0cm'><a name="_Toc171777087"><![if !supportLists]><span
+lang=PT><span style='mso-list:Ignore'>1.1.7 - </span></span><![endif]><span
+lang=PT>Funções, equações e gráficos</span></a></h3>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h4 style='margin-left:1.5cm;text-indent:0cm;mso-text-indent-alt:2.0cm'><![if !supportLists]><span
+lang=PT style='font-family:Wingdings;mso-fareast-font-family:Wingdings;
+mso-bidi-font-family:Wingdings;font-weight:normal'><span style='mso-list:Ignore'><span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Ø</span></span><![endif]><span
+lang=PT>Sistema cartesiano 2D</span></h4>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h4 style='margin-left:1.5cm;text-indent:0cm;mso-text-indent-alt:2.0cm'><![if !supportLists]><span
+lang=PT style='font-family:Wingdings;mso-fareast-font-family:Wingdings;
+mso-bidi-font-family:Wingdings;font-weight:normal'><span style='mso-list:Ignore'><span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Ø</span></span><![endif]><span
+lang=PT>Sistema cartesiano 3D</span></h4>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h3 style='text-indent:0cm'><a name="_Toc171777088"><![if !supportLists]><span
+lang=PT><span style='mso-list:Ignore'>1.1.8 - </span></span><![endif]><span
+lang=PT>Simetrias</span></a></h3>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h2 style='margin-left:1.0cm;text-indent:0cm'><a name="_Toc171777089"><![if !supportLists]><span
+lang=PT><span style='mso-list:Ignore'>1.2 - </span></span><![endif]><span
+lang=PT>Método para geração de gráficos 3D e 4D de funções complexas</span></a></h2>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h2 style='margin-left:1.0cm;text-indent:0cm'><a name="_Toc171777090"><![if !supportLists]><span
+lang=PT><span style='mso-list:Ignore'>1.3 - </span></span><![endif]><span
+lang=PT>O círculo unitário e a hipérbole equilátera</span></a></h2>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'>radianos<o:p></o:p></span></p>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h2 style='margin-left:1.0cm;text-indent:0cm'><a name="_Toc171777091"><![if !supportLists]><span
+lang=PT><span style='mso-list:Ignore'>1.4 - </span></span><![endif]><span
+lang=PT>Funções trigonométricas circulares e hiperbólicas, e a função
+exponencial</span></a></h2>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+<h2 style='margin-left:1.0cm;text-indent:0cm'><a name="_Toc171777092"><![if !supportLists]><span
+lang=PT><span style='mso-list:Ignore'>1.5 - </span></span><![endif]><span
+lang=PT>Equação de Euler e os círculos imaginários</span></a></h2>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'>Círculo “natural”
+quando a base é “e”<o:p></o:p></span></p>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'>O círculo e a medida
+dos ciclos<o:p></o:p></span></p>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'>Os círculos
+imaginários de ciclo encurtado<o:p></o:p></span></p>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'>Os círculos
+imaginários de ciclo alongado<o:p></o:p></span></p>
+
+<p class=Comum><span lang=PT style='mso-ansi-language:PT'><o:p>&nbsp;</o:p></span></p>
+
+</div>
+{% endblock %}
+
+{% block content1 %}
+	<h3>Números complexos</h3>
+	<p>Bem vindo ao Estudo dos <em>números complexos</em>!</p>
+	<h4>- números e funções</h4>
+	<h4>- gráficos 2D e 3D convencionais</h4>
+	<h4>- gráficos 3D e 4D de funções complexas</h4>
+	<h4>- funções complexas estudadas</h4>
+	<br>
+{% endblock %}
