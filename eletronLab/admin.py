@@ -33,7 +33,7 @@ class TemaAdmin(admin.ModelAdmin):
     list_display = ('titulo', 'categoria', 'pagina', 'semana','ordem')
     list_filter = ('categoria', 'semana')
     inlines = [TemaInstanceInline]
-    queryset = Tema.objects.order_by(F('semana').asc(nulls_first=False))
+    queryset = Tema.objects.order_by(F('semana').asc(nulls_first=True))
 
 # ############################################################################################################
 # Define the admin class

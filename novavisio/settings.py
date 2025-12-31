@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'eletronLab.apps.EletronLabConfig',
-    'complexNum.apps.ComplexNumConfig',
 ]
 
 MIDDLEWARE = [
@@ -158,3 +157,10 @@ STATIC_URL = '/static/'
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+# SECURITY WARNING: check --deploy
+SECURE_SSL_REDIRECT = False
+
+# SECURITY WARNING: check --deploy
+SECURE_HSTS_SECONDS = 0

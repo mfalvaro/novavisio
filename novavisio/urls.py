@@ -29,7 +29,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("contas/", include("django.contrib.auth.urls")),  # new]
     path('eletronLab/', include('eletronLab.urls')),
-    path('complexNum/', include('complexNum.urls')),
     path('', views0.home, name="home"),
 
 ]
