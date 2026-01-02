@@ -31,9 +31,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '6-gth!ei78h8&93+wxsm(priow%r%e^1+v^71z9upn)oxpr7)f')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True #True False
+DEBUG = False #True False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'novavisio-191652759d06.herokuapp.com', '*.herokuapp.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'gpsgeo.pythonanywhere.com']
 
 
 # Application definition
@@ -50,7 +50,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -86,11 +85,12 @@ WSGI_APPLICATION = 'novavisio.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'bd_eletronlab',
-        'USER': 'eletronlab',
+        'NAME': 'gpsgeo$bd_eletronlab',
+        'USER': 'gpsgeo',
         'PASSWORD': 'lab1@Eletron',
-        'HOST':'bd-eletronlab.mysql.uhserver.com',
+        'HOST':'gpsgeo.mysql.pythonanywhere-services.com',
         'PORT': '3306',
+        'OPTIONS': {"charset": "utf8mb4"},
     }
 }
 
@@ -119,7 +119,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'pt-br'
 
-TIME_ZONE = 'Brazil/East'
+TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True
 
@@ -137,9 +137,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = "home_eLab"
 LOGOUT_REDIRECT_URL = "home_eLab"  # new
 
-SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = False
 
-CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False
 
 ##if os.environ.get('DATABASE_URL', ''):
 ##    db_from_env = dj_database_url.config(conn_max_age=500)
@@ -156,7 +156,7 @@ STATIC_URL = '/static/'
 
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+#STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # SECURITY WARNING: check --deploy

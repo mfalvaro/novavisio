@@ -47,12 +47,15 @@ paginacao=15
 ##--------------------FUNCTIONS AND CLASSES---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ##    home_eLab PAGE **********************************************************************************************************************************************************************    HOME PAGE
 def home_eLab(request):
+    db_server='indefinido'
     #verifica a fonte de dados
     a=settings.DATABASES['default']['HOST']
     if 'mysql.uhserver.com' in a:
         db_server='UOL Host'
     if 'localhost' in a:
         db_server='localhost'
+    if 'pythonanywhere-services.com' in a:
+        db_server='PA Host'
     db_db=settings.DATABASES['default']['NAME']
 
     """View function for home page of site."""

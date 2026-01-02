@@ -16,7 +16,15 @@
 			<li><a href="{% url 'searchs' %}">-  Procurar</a></li>
 			<br>
 			<li>User: {{ user.get_username }}</li>
-			<li><a href="{% url 'logout' %}">-Logout-</a></li>
+
+			<li>
+				<form method="post" action="{% url 'logout' %}" style="display:inline;">
+					{% csrf_token %}
+					<button type="submit" style="background:none;border:none;padding:0;color:#00f;cursor:pointer;">
+						-Logout-
+					</button>
+				</form>
+			</li>
 		{% else %}
 			<br>
 			<li><a href="{% url 'login' %}">Login</a></li>
@@ -42,7 +50,7 @@
 	<li><strong>Número de assuntos comentados:</strong> {{ num_assuntos }}</li>
 	<li><strong>Número de ci´s estudados:</strong> {{ num_cis }}</li>
 	</ul>
-	<p><span id="parag1">Circuitos integrados estudados</span> 
+	<p><span id="parag1">Circuitos integrados estudados</span>
 		<span>&nbsp;&nbsp;&nbsp;</span>
 		<span id="parag2"><a href="{% url 'ci_create' %}">Adicionar ci...</a></span>
 	</p>
@@ -95,7 +103,7 @@
 	<p>Número acessos a este link: {{ num_visits }} click{{ num_visits|pluralize }}</p>
 	<p>You have visited this page {{ num_visits }} time{{ num_visits|pluralize }}.</p>
 {% endblock %}
-  
+
 
 
 
