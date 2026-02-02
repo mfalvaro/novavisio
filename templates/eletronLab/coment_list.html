@@ -21,12 +21,6 @@
 							{% endif %}
 						{% endfor %}
 					</select>
-					<!-- <datalist id="lista_ass">
-						{% for ass in filtro_ass_lst %}
-							<option value="{{ ass }}">{{ ass }}</option>
-						{% endfor %}
-					</datalist>
-					<input type="search" list="lista_ass" name="assunto" id="assunto" value={{ filtro_ass_url }}> -->
 				</li>
 				<li>
 					<label for="detalhe">Detalhe:</label>
@@ -35,10 +29,6 @@
 			</ul>
 		</div>
 		<button type="submit">Filtrar</button>
-<!-- 		<p>filtro_det_url={{ filtro_det_url }}</p>
-		<p>filtro_url={{ filtro_url }}</p>
-		<p>comentlist_filtro_det={{ comentlist_filtro_det }}</p>
-		<p>url 'coments'={% url 'coments' %}</p> -->
 	
 	</form>
   <!-- LISTA DE COMENTÁRIOS   ******************************************************************************************************************************************* LISTA DE COMENTÁRIOS -->
@@ -52,7 +42,7 @@
 		  </li>	
 		{% elif c.assunto == 'ci' %}
 		  <li>
-			<a href="{{ c.get_absolute_url }}">{{ c.assunto }}</a> :: <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/ci/ci_{{ c.detalhe }}.jpg">{{ c.detalhe }}</a>
+			<a href="{% url 'ci-detail' c.detalhe %}">{{ c.assunto }}</a> :: <a href="{{ c.get_absolute_url }}">{{ c.detalhe }}</a>
 		  </li>			
 		{% elif c.assunto == 'projeto' %}
 		  <li>

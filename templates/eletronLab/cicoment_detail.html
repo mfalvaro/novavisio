@@ -1,0 +1,42 @@
+<!-- templates/estudoa/temacoment_detail.html-->
+{% extends 'eletronLab/home_eLab.html' %}
+
+{% block title %}Comentário e Tema{% endblock %}
+
+{% block content %}
+  <h2>Ci & Comentário</h2>
+
+  <p><strong>Ci:</strong> <a href="{{ cicoment.ci.get_absolute_url }}">{{ cicoment.ci }} </a></p>
+  <p><strong>Comentário:</strong> <a href="{{ cicoment.coment.get_absolute_url }}">{{ cicoment.coment }}</a></p>
+  <p><strong>Data:</strong> {{ cicoment.data|date:"l, j \d\e F \d\e Y H:i"  }}</p>
+
+  <div style="margin-left:20px;margin-top:20px">
+    <h4>Outros comentários deste ci</h4>
+	  <ul>
+	  	{% if cicoment.ci.cicoment_set.count == 1 %} <!-- verifica se o ci só tem um comentário -->
+			 <p>Não há outros comentários associados a este ci.</p>
+		{% else %} <!-- caso o ci tenha mais de um comentário -->
+		{% for c in cicoment.ci.cicoment_set.all %}
+			{% if c.coment == cicoment.coment %}<!-- não inclui este comentário na lista de outros comentários-->
+			{% else %} <!-- inclui os outros comentários na lista-->
+			  <li>
+				<a href="{{ c.coment.get_absolute_url }}">{{ c.coment }}</a> 
+			  </li>
+			{% endif %}
+		{% endfor %}
+		{% endif %}
+	  </ul>
+  </div>
+  
+  <div>
+    <a href="{% url 'home' %}cicoment/create">Criar novo ci/coment...</a>
+  </div>
+  <div>
+    <a href="{{ cicoment.get_absolute_url }}/delete">Apagar este ci/coment...</a>
+  </div>
+  
+{% endblock %}
+
+{% block content1 %}
+	<p>Faça o login para acessar o conteúdo.</p>
+{% endblock %}

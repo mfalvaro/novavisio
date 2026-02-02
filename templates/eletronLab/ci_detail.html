@@ -1,0 +1,137 @@
+<!-- templates/estudoa/ci_detail.html-->
+{% extends 'eletronLab/home_eLab.html' %}
+
+{% block title %}eLab ci {{ ci.codci }}{% endblock %}
+
+{% block content %}
+<!-- Add additional CSS, img in static files -->
+{% load static %}
+
+<p id="parag1">{{ ci.codci }} - {{ ci.sobre }}</p>
+
+<p><a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/ci/ci_{{ ci.codci }}.jpg"><strong>Desenho/esquema do ci</strong></a> </p>
+
+<!-- LISTA DE TEMAS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+<div style="margin-left:20px;margin-top:20px">
+    <h4>Temas associados</h4>
+    <ul>
+        {% for tc in temas_page %}
+        <li>
+            <a href="{{ tc.tema.get_absolute_url }}">{{ tc.tema.titulo }}</a> ({{ tc.tema.semana }}.{{ tc.tema.ordem }} - {{ tc.tema.categoria }}, {{ tc.tema.pagina }})
+            <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/temas/tema{{ tc.tema.semana|stringformat:"02d" }}_{{ tc.tema.ordem }}.pdf"><img src="{% static 'res/' %}download2.jpg"></a>
+        </li>
+        {% empty %}
+        <p>Não há temas associados a este ci.</p>
+        {% endfor %}
+    </ul>
+    <!-- PAGINATOR DE TEMAS **************************************************************************************************************** -->
+    {% if temas_page.has_other_pages %}
+    {% if temas_page.has_previous %}
+    <a href="?tpage={{ temas_page.previous_page_number }}">previous</a>
+    {% else %}
+    previous
+    {% endif %}
+
+    Page {{ temas_page.number }} of {{ temas_page.paginator.num_pages }}
+
+    {% if temas_page.has_next %}
+    <a href="?tpage={{ temas_page.next_page_number }}">next</a>
+    {% else %}
+    next
+    {% endif %}
+    {% endif %}
+</div>
+
+<!-- LISTA DE COMENTÁRIOS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+<div style="margin-left:20px;margin-top:20px">
+    <h4>Comentários associados</h4>
+
+    <ul>
+        {% for cc in coments_page %}
+        {% if cc.coment.assunto == 'outro tema' %}
+        <li>
+            <a href="{{ cc.coment.get_absolute_url }}">{{ cc.coment.assunto }}</a> ::
+            <a href="{{ cc.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
+            <a href="{% url 'outro_tema' %}?outrotema={{ cc.coment.detalhe }}">{{ cc.coment.detalhe }}</a> :::: {{ cc.obs }}  ({{ cc.data|date:"j/n/y - G:i" }})
+            <a href="{{ cc.get_absolute_url }}/delete/?ci={{ ci.codci }}">  <img src="{% static 'res/' %}delete.png"></a>
+        </li>
+        {% elif cc.coment.assunto == 'ci' %}
+        <li>
+            <a href="{% url 'ci-detail' cc.coment.detalhe %}">{{ cc.coment.assunto }}</a> ::
+            <a href="{{ cc.coment.get_absolute_url }}">{{ cc.coment.detalhe }}</a> :::: {{ cc.obs }}   ({{ cc.data|date:"j/n/y - G:i" }})
+            <a href="{{ cc.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
+            <a href="{{ cc.get_absolute_url }}/delete/?ci={{ ci.codci }}">  <img src="{% static 'res/' %}delete.png"></a>
+        </li>
+        {% elif cc.coment.assunto == 'projeto' %}
+        <li>
+            <a href="{{ cc.coment.get_absolute_url }}">{{ cc.coment.assunto }}</a> ::
+            <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/projetos/{{ cc.coment.detalhe }}.jpg">{{ cc.coment.detalhe }}</a> :::: {{ cc.obs }}   ({{ cc.data|date:"j/n/y - G:i" }})
+            <a href="{{ cc.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
+            <a href="{{ cc.get_absolute_url }}/delete/?ci={{ ci.codci }}">  <img src="{% static 'res/' %}delete.png"></a>
+        </li>
+        {% else %}
+        <li>
+            <a href="{{ cc.coment.get_absolute_url }}">{{ cc.coment.assunto }} :: {{ cc.coment.detalhe }}</a> :::: {{ cc.obs }}   ({{ cc.data|date:"j/n/y - G:i" }})
+            <a href="{{ cc.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
+            <a href="{{ cc.get_absolute_url }}/delete/?ci={{ ci.codci }}">  <img src="{% static 'res/' %}delete.png"></a>
+        </li>
+        {% endif %}
+        {% empty %}
+        <p>Não há comentários associados a este ci.</p>
+        {% endfor %}
+    </ul>
+    <!-- PAGINATOR DE COMENTÁRIOS **************************************************************************************************************** -->
+    {% if coments_page.has_other_pages %}
+    {% if coments_page.has_previous %}
+    <a href="?cpage={{ coments_page.previous_page_number }}
+		 {% if temas_page.number %}
+			 &tpage={{ temas_page.number }}
+		 {% endif %}
+		 ">
+        previous
+    </a>
+    {% else %}
+    previous
+    {% endif %}
+
+    Page {{ coments_page.number }} of {{ coments_page.paginator.num_pages }}
+
+    {% if coments_page.has_next %}
+    <a href="?cpage={{ coments_page.next_page_number }}
+		 {% if temas_page.number %}
+			 &tpage={{ temas_page.number }}
+		 {% endif %}
+		 ">
+        next
+    </a>
+    {% else %}
+    next
+    {% endif %}
+    {% endif %}
+</div>
+
+
+<!-- BOTÕES PARA ASSOCIAR COMENTÁRIOS NOVOS **************************************************************************************************************** -->
+<br>
+<br>
+<div>
+    <a href="{% url 'home_eLab' %}cicoments/create/?ci={{ ci.codci }}">Criar ci/coment existente...</a>
+</div>
+<div id="fim_de_pagina1">
+    <a href="{% url 'cicoment-novo-create' %}?ci={{ ci.codci }}">Criar ci/coment novo...</a>
+    <br>
+    <br>
+</div>
+
+
+{% endblock %}
+
+
+
+
+
+
+
+{% block content1 %}
+<p>Faça o login para acessar o conteúdo.</p>
+{% endblock %}

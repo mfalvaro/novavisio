@@ -3,21 +3,19 @@
 
 {% block content %}
 
-<h3>Remover comentário deste Tema?</h3>
-
-
+<h3>Remover comentário deste CI?</h3>
 
 <p>
 	Deseja remover o comentário:<br>
 	<strong>{{ object.coment.assunto }} :: {{ object.coment.detalhe }}</strong><br>
-	do tema:<br>
-	<strong>{{ object.tema }}</strong>
+	do CI:<br>
+	<strong>{{ object.ci }}</strong>
 </p>
 
-
-<form action="" method="POST">
+<form method="post">
 	{% csrf_token %}
-	<input type="submit" value="Sim, apagar.">
+	<button type="submit">Sim, remover associação</button>
+	<a href="{{ object.ci.get_absolute_url }}">Cancelar</a>
 </form>
 
 {% endblock %}
@@ -27,3 +25,8 @@
 <p>Faça o login para acessar o conteúdo.</p>
 	</br>
 {% endblock %}
+
+
+
+
+

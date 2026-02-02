@@ -10,14 +10,13 @@
 
 
 ##-----------------------------IMPORTS--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 
-from .models import Coment, Tema, TemaComent, Ci
+from .models import Coment, Tema, TemaComent, Ci, Comp, CiComent, CompComent
 from django.db.models import Count
 from django.views import generic
 
 from novavisio import settings
-#
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 import locale
@@ -25,20 +24,25 @@ import locale
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.shortcuts import redirect
+
 #acesso para as caixas de mensagem padrão do windows
 import ctypes
 
 from eletronLab.forms import ComentCreateForm
 from eletronLab.forms import TemaComentCreateForm
-
-import sys
-#Importa funções comuns reunidas no módulo aux1
-#sys.path.append(r'C:\Users\GPS-PC08\Documents\_Particular\Books\tec_mat\2021_05_Estudo_NumeroComplexo')
-#import aux1 as aux
+from eletronLab.forms import CiComentCreateForm
+from eletronLab.forms import CiComentNovoForm
+from eletronLab.forms import CompComentCreateForm
+from eletronLab.forms import CompComentNovoForm
 
 from django.views import View
 from django.http import HttpResponse
+
+
+from django.views.decorators.cache import never_cache
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
+
 
 
 ##-----------------------------GLOBALS--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -98,7 +102,6 @@ def home_eLab(request):
     return render(request, 'eletronLab/home_eLab.html', context=context)
 
 
-
 ##    TEMA ***************************************************************************************************************************************************************************    TEMA
 #  LISTA VISUALIZAÇÃO  #################################################################################################################  LISTA VISUALIZAÇÃO
 class TemaListViewSorted(generic.ListView):
@@ -120,8 +123,6 @@ class TemaListViewSorted(generic.ListView):
 
     #SISTEMA DE PAGINAÇÃO**********************************************************
     paginate_by = paginacao
-##    page_url=1
-##    page_obj=''
 
     #SISTEMA DE FILTRAGEM (FILTRO)**********************************************************
     filtro_url=''
@@ -184,9 +185,6 @@ class TemaListViewSorted(generic.ListView):
         #Define ou pega o parâmetro da session 'temalist_filtro_cat'. Usa-se session para não perder as escolhas do usuário
         temalist_filtro_cat = self.request.session.get('temalist_filtro_cat', '')
         self.filtro_cat_url=self.request.GET.get('categoria',temalist_filtro_cat) #caso não encontre retorna o padrão, temalist_filtro_cat
-##        resp1=ctypes.windll.user32.MessageBoxW(0, f"{self.request.path}", "Mensagem Python", 0)# 0 : OK
-##        resp1=ctypes.windll.user32.MessageBoxW(0, f"{self.request.GET.getlist('categoria', default=None)}", "Mensagem Python", 0)# 0 : OK
-##        resp1=ctypes.windll.user32.MessageBoxW(0, f"{self.request.get_full_path_info()}", "Mensagem Python", 0)# 0 : OK
 
         #Redefine o parâmetro da session 'temalist_filtro_cat' como o parâmetro passado pela url, parâmetro 'categoria'
         self.request.session['temalist_filtro_cat'] = self.filtro_cat_url
@@ -201,15 +199,6 @@ class TemaListViewSorted(generic.ListView):
         else:
             queryset=Tema.objects.all().order_by(self.sort_str)
 
-##        #SISTEMA DE PAGINAÇÃO **********************************************************
-##        #Define ou pega o parâmetro da session 'tema_list_page'. Usa-se session para não perder as escolhas do usuário
-##        tema_list_page = self.request.session.get('tema_list_page', 1)
-##        # Captura do parâmetro page da URL da paginação automática
-##        self.page_url=self.request.GET.get('page',tema_list_page) #caso não encontre retorna o padrão, tema_list_page
-##        #Redefine o parâmetro da session 'tema_list_sort' como o parâmetro passado pela url, parâmetro 'col'
-##        self.request.session['tema_list_page'] = self.page_url
-##        paginator = Paginator(queryset, self.paginate_by)
-##        self.page_obj = paginator.get_page(self.page_url)
         return queryset
 
     # fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff----get_context_data
@@ -228,7 +217,6 @@ class TemaListViewSorted(generic.ListView):
         context['filtro_sem_url'] = self.filtro_sem_url
         context['filtro_cat_url'] = self.filtro_cat_url
         context['filtro_cat_lst'] = self.filtro_cat_lst
-##        context['page_obj'] = self.page_obj
         return context
 
 
@@ -246,92 +234,88 @@ class TemaUpdate(UpdateView):
 
 ##    COMENT *************************************************************************************************************************************************************************    COMENT
 #  LISTA VISUALIZAÇÃO  ################################################################################################################          LISTA VISUALIZAÇÃO
+@method_decorator(never_cache, name='dispatch')
 class ComentListView(generic.ListView):
     model = Coment
-    template_name = 'eletronLab/coment_list.html'  # Specify your own template name/location
-
-    #SISTEMA DE PAGINAÇÃO**********************************************************
+    template_name = 'eletronLab/coment_list.html'
     paginate_by = paginacao
 
-    #SISTEMA DE FILTRAGEM (FILTRO)**********************************************************
-    filtro_url=''
-    filtro_ass_url=''
-    filtro_det_url=''
-
-    #Lista exclusiva de assuntos criando uma lista exclusiva a partir da função set do python
-    filtro_ass_lst=list(set(Coment.objects.values_list("assunto"))) #lista de tuples
-    #transforma em uma lista de valores
-    for i in range(len(filtro_ass_lst)):
-        filtro_ass_lst[i]=filtro_ass_lst[i][0]
-    #classifica filtro_ass_lst
-    #note que para que os caracteres utf-8 sejam considerados há qe se usar o módulo locale
-    locale.setlocale(locale.LC_ALL, '')
-    filtro_ass_lst=sorted(filtro_ass_lst,key=locale.strxfrm)
-    #insere o valor 'vazio' como primeiro item da lista
-    filtro_ass_lst.insert(0,"")
-
-    # fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff----get_queryset
     def get_queryset(self):
-
-        #SISTEMA DE FILTRAGEM (FILTRO) POR ASSUNTO E/OU DETALHE **********************************************************
-        #Define ou pega o parâmetro da session 'comentlist_filtro_ass'. Usa-se session para não perder as escolhas do usuário
+        # pega defaults da session
         comentList_filtro_ass = self.request.session.get('comentList_filtro_ass', '')
-        # Captura os parâmetros para filtragem contidos na URL quando se clica em "filtrar"
-        self.filtro_ass_url=self.request.GET.get('assunto',comentList_filtro_ass) #caso não encontre retorna o padrão, comentList_filtro_ass
-        #Redefine o parâmetro da session 'comentList_filtro_ass' como o parâmetro passado pela url, parâmetro 'assunto'
-        self.request.session['comentList_filtro_ass'] = self.filtro_ass_url
-
-##        #torna o valor do filtro de assunto um valor inteiro
-##        if self.filtro_ass_url != '':
-##            self.filtro_ass_url=int(self.filtro_ass_url)
-
-        #Define ou pega o parâmetro da session 'comentlist_filtro_det'. Usa-se session para não perder as escolhas do usuário
         comentlist_filtro_det = self.request.session.get('comentlist_filtro_det', '')
-        self.filtro_det_url=self.request.GET.get('detalhe',comentlist_filtro_det) #caso não encontre retorna o padrão, comentlist_filtro_det
-        #Redefine o parâmetro da session 'comentlist_filtro_det' como o parâmetro passado pela url, parâmetro 'categoria'
+
+        # lê da URL ou usa session
+        self.filtro_ass_url = self.request.GET.get('assunto', comentList_filtro_ass)
+        self.filtro_det_url = self.request.GET.get('detalhe', comentlist_filtro_det)
+
+        # salva de volta na session
+        self.request.session['comentList_filtro_ass'] = self.filtro_ass_url
         self.request.session['comentlist_filtro_det'] = self.filtro_det_url
 
-        #Verifica e configura o tipo de filtragem escolhida pelo usuário
-        if self.filtro_ass_url != '' and self.filtro_det_url == '':
-            queryset=Coment.objects.filter(assunto__exact=self.filtro_ass_url)#.order_by(self.sort_str)
-            self.filtro_url=f"&assunto={self.filtro_ass_url}"
-        elif self.filtro_det_url !='' and self.filtro_ass_url == '':
-            queryset=Coment.objects.filter(detalhe__icontains=self.filtro_det_url)#.order_by(self.sort_str)
-            self.filtro_url=f"&detalhe={self.filtro_det_url}"
-        elif self.filtro_det_url !='' and self.filtro_ass_url != '':
-            queryset=Coment.objects.filter(assunto__exact=self.filtro_ass_url).filter(detalhe__icontains=self.filtro_det_url)#.order_by(self.sort_str)
-            self.filtro_url=f"&assunto={self.filtro_ass_url}&detalhe={self.filtro_det_url}"
-        else:
-            queryset=Coment.objects.all()#.order_by(self.sort_str)
+        # monta queryset + string do filtro (pra paginação/links)
+        self.filtro_url = ''
+        qs = Coment.objects.all()
 
-##        #SISTEMA DE PAGINAÇÃO **********************************************************
-##        #Define ou pega o parâmetro da session 'tema_list_page'. Usa-se session para não perder as escolhas do usuário
-##        tema_list_page = self.request.session.get('tema_list_page', 1)
-##        # Captura do parâmetro page da URL da paginação automática
-##        self.page_url=self.request.GET.get('page',tema_list_page) #caso não encontre retorna o padrão, tema_list_page
-##        #Redefine o parâmetro da session 'tema_list_sort' como o parâmetro passado pela url, parâmetro 'col'
-##        self.request.session['tema_list_page'] = self.page_url
-##        paginator = Paginator(queryset, self.paginate_by)
-##        self.page_obj = paginator.get_page(self.page_url)
-        return queryset
+        if self.filtro_ass_url:
+            qs = qs.filter(assunto__exact=self.filtro_ass_url)
+            self.filtro_url += f"&assunto={self.filtro_ass_url}"
 
+        if self.filtro_det_url:
+            qs = qs.filter(detalhe__icontains=self.filtro_det_url)
+            self.filtro_url += f"&detalhe={self.filtro_det_url}"
 
-    # fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff----get_context_data
+        return qs
+
+    def get_assuntos(self):
+        key = "coment_assuntos_distintos_v3"
+        assuntos = cache.get(key)
+        if assuntos is None:
+            assuntos = list(
+                Coment.objects
+                     .order_by()                      # <<< limpa o ordering padrão
+                     .values_list("assunto", flat=True)
+                     .distinct()
+            )
+
+            import locale
+            locale.setlocale(locale.LC_ALL, '')
+            assuntos = sorted(assuntos, key=locale.strxfrm)
+            assuntos.insert(0, "")
+
+            cache.set(key, assuntos, 3600)
+        return assuntos
+
     def get_context_data(self, **kwargs):
-        # Call the base implementation first to get the context
         context = super().get_context_data(**kwargs)
-        # Create any data and add it to the context
-        context['filtro_ass_lst'] = self.filtro_ass_lst
-        context['filtro_ass_url'] = self.filtro_ass_url
-        context['filtro_det_url'] = self.filtro_det_url
-        context['filtro_url'] = self.filtro_url
+        context['filtro_ass_lst'] = self.get_assuntos()
+        context['filtro_ass_url'] = getattr(self, 'filtro_ass_url', '')
+        context['filtro_det_url'] = getattr(self, 'filtro_det_url', '')
+        context['filtro_url'] = getattr(self, 'filtro_url', '')
         return context
 
 #  INDIVIDUAL VISUALIZAÇÃO ############################################################################################################     INDIVIDUAL VISUALIZAÇÃO
 class ComentDetailView(generic.DetailView):
     model = Coment
     template_name = 'eletronLab/coment_detail.html'  # Specify your own template name/location
+    slug_field = 'codcoment'
+    slug_url_kwarg = 'codcoment'
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+
+        # 1) TEMAS associados ao coment (via coment principal do CI)
+        qs_temas = self.object.temacoment_set.select_related('tema').all()
+        paginator_temas = Paginator(qs_temas, 7)
+        ctx['temas_page'] = paginator_temas.get_page(self.request.GET.get('tpage'))
+
+        # 2) COMENTÁRIOS associados ao CI (via tabela ci_coment)
+        #qs_cis = self.object.cicoment_set.select_related('ci').all()
+        qs_cis = CiComent.objects.filter(coment=self.object).select_related('ci')
+        paginator_coments = Paginator(qs_cis, 7)
+        ctx['cis_page'] = paginator_coments.get_page(self.request.GET.get('cpage'))
+
+        return ctx
 
 #  INDIVIDUAL CREATE ###################################################################################################################          INDIVIDUAL CREATE
 class ComentCreate(CreateView):
@@ -343,20 +327,37 @@ class ComentCreate(CreateView):
         form = ComentCreateForm(request.POST)
         if form.is_valid():
             self.object = form.save()
-            self.object.save()
-            if self.request.GET.get('coment','')=='criar':
-                tc1 = TemaComent.objects.create(coment=self.object, tema=Tema.objects.get(pk=int(self.request.GET.get('tema',''))))
-                return redirect(reverse_lazy('tema-detail', kwargs={'pk': self.request.GET.get('tema',1)}))
-            return redirect(reverse_lazy('coment-detail', kwargs={'pk': self.object.codcoment}))
-#            return redirect(reverse_lazy('coments'))
-        return render(request, 'eletronLab/coment_form.html', {'form': form})
 
+            # fluxo "criar e associar"
+            if self.request.GET.get('coment', '') == 'criar':
+
+                # 1) veio de um TEMA
+                tema_pk = self.request.GET.get('tema', '')
+                if tema_pk:
+                    TemaComent.objects.get_or_create(
+                        coment=self.object,
+                        tema=Tema.objects.get(pk=int(tema_pk))
+                    )
+                    return redirect(reverse_lazy('tema-detail', kwargs={'pk': int(tema_pk)}))
+
+                # 2) veio de um CI
+                codci = self.request.GET.get('ci', '')
+                if codci:
+                    CiComent.objects.get_or_create(
+                        coment=self.object,
+                        ci=Ci.objects.get(pk=codci)  # pk texto OK
+                    )
+                    return redirect(reverse_lazy('ci-detail', kwargs={'pk': codci}))
+
+            # fluxo normal (só cria comentário)
+            return redirect(reverse_lazy('coment-detail', kwargs={'pk': self.object.codcoment}))
+
+        return render(request, 'eletronLab/coment_form.html', {'form': form})
 
 # INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
 class ComentUpdate(UpdateView):
     model = Coment
     fields = ['assunto', 'detalhe']
-
 
 # INDIVIDUAL DELETE ####################################################################################################################          INDIVIDUAL DELETE
 class ComentDelete(DeleteView):
@@ -365,6 +366,71 @@ class ComentDelete(DeleteView):
 
 
 ##    TEMACOMENT *********************************************************************************************************************************************************************    TEMACOMENT
+#  INDIVIDUAL VISUALIZAÇÃO ##########################################################################################################  INDIVIDUAL VISUALIZAÇÃO
+class TemaComentDetailView(generic.DetailView):
+    model = TemaComent
+    template_name = 'eletronLab/temacoment_detail.html'  # Specify your own template name/location
+
+#  INDIVIDUAL CREATE MULTIPLE ################################################################################################################        INDIVIDUAL CREATE MULTIPLE
+def TemaComentCreate(request):
+    #Guarda o id do tema para criar os TemaComents de comentários já existentes selecionados (select multiple)
+    tmpTema=request.GET.get('tema',1)
+    #verifica o método de chamada GET ou POST
+    if request.method == 'GET':
+        context = {'form': TemaComentCreateForm(initial={'tema':tmpTema},)}#inicializa o formulário em branco
+        return render(request, 'eletronLab/temacoment_form.html', context)
+    elif request.method == 'POST':
+        form = TemaComentCreateForm(request.POST) #iniciliza o formulário com os dados selecionadas pelo usuário
+        #insere os registros dos comentários selecionados pelo usuário para o tema (tmpTema)
+        for cmt in form['coment'].data:
+            tmpTemaCmt, created = TemaComent.objects.get_or_create(tema= Tema.objects.get(pk=tmpTema), coment= Coment.objects.get(pk=cmt))
+            #tmpTemaCmt = TemaComent(tema= Tema.objects.get(pk=tmpTema), coment= Coment.objects.get(pk=cmt))
+            #tmpTemaCmt.save()
+        return redirect(reverse_lazy('tema-detail', kwargs={'pk': tmpTema}))
+
+#        resp1=ctypes.windll.user32.MessageBoxW(0, f"Request method: GET", "Mensagem Python", 0)# 0 : OK
+#        resp1=ctypes.windll.user32.MessageBoxW(0, f"Request method: POST", "Mensagem Python", 0)# 0 : OK
+#        resp1=ctypes.windll.user32.MessageBoxW(0, f"{form['coment'].data}\n{type(form['coment'].data)}", "Mensagem Python", 0)# 0 : OK
+
+
+#  INDIVIDUAL DELETE ################################################################################################################        INDIVIDUAL DELETE
+class TemaComentDelete(DeleteView):
+    model = TemaComent
+
+    # fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff----get_success_url
+    def get_success_url(self):
+        if self.request.GET.get('tema','')=='':
+            return reverse_lazy('searchs')
+        else:
+            return reverse_lazy('tema-detail', kwargs={'pk': self.request.GET.get('tema',1)})
+
+##    OUTRO TEMA **********************************************************************************************************************************************************************    OUTRO TEMA
+def OutroTema(request):
+
+    # Captura do parâmetro outrotema da URL onde está a categoria do tema e sua respectiva página separadas por um espaço em branco
+    #A categoria em especial, "O laboratório 11" (por exemplo) deve ser parseada de forma distinta das demais,
+    #pois tem um len() igual a 3 e as demais tem um len() igual a dois
+    outrotema = request.GET.get('outrotema',"teoria 1") #caso não encontre retorna o padrão, Teoria 1
+    tmp1=outrotema.split()
+    if len(tmp1)==3:
+        tmpcat=tmp1[0]+ ' ' + tmp1[1] # categoria "O Laboratório"
+        tmppag=int(tmp1[2]) #página
+    else:
+        tmpcat=tmp1[0]# demais categoria
+        tmppag=int(tmp1[1])# página
+
+    #queryset que recupera o respectivo tema a partir de sua categoria/pg
+    tmptema = Tema.objects.filter(categoria__iexact=tmpcat).filter(pagina__exact=tmppag)
+
+    #em caso de algum problema retorna um queryset com o primeiro tema "Teoria 1"
+    if len(tmptema)!=1:
+        tmptema = Tema.objects.filter(categoria__iexact='teoria').filter(pagina__exact=1)
+
+
+    # Render the HTML template e redireciona para o tema recuperado tema/id que por sua vez é
+    #direcionada para TemaDetailView()
+    return redirect(tmptema[0])
+
 #  LISTA VISUALIZAÇÃO  ##############################################################################################################      LISTA VISUALIZAÇÃO
 class SearchListView(generic.ListView):
     template_name = 'eletronLab/search_list.html'  # Specify your own template name/location
@@ -455,86 +521,288 @@ class SearchListView(generic.ListView):
         context['page_obj2'] = self.page_obj2
         return context
 
-#  INDIVIDUAL VISUALIZAÇÃO ##########################################################################################################  INDIVIDUAL VISUALIZAÇÃO
-class TemaComentDetailView(generic.DetailView):
-    model = TemaComent
-    template_name = 'eletronLab/temacoment_detail.html'  # Specify your own template name/location
-
-
-#  INDIVIDUAL CREATE MULTIPLE ################################################################################################################        INDIVIDUAL CREATE MULTIPLE
-def TemaComentCreate(request):
-    #Guarda o id do tema para criar os TemaComents de comentários já existentes selecionados (select multiple)
-    tmpTema=request.GET.get('tema',1)
-    #verifica o método de chamada GET ou POST
-    if request.method == 'GET':
-        context = {'form': TemaComentCreateForm(initial={'tema':tmpTema},)}#inicializa o formulário em branco
-        return render(request, 'eletronLab/temacoment_form.html', context)
-    elif request.method == 'POST':
-        form = TemaComentCreateForm(request.POST) #iniciliza o formulário com os dados selecionadas pelo usuário
-        #insere os registros dos comentários selecionados pelo usuário para o tema (tmpTema)
-        for cmt in form['coment'].data:
-            tmpTemaCmt, created = TemaComent.objects.get_or_create(tema= Tema.objects.get(pk=tmpTema), coment= Coment.objects.get(pk=cmt))
-            #tmpTemaCmt = TemaComent(tema= Tema.objects.get(pk=tmpTema), coment= Coment.objects.get(pk=cmt))
-            #tmpTemaCmt.save()
-        return redirect(reverse_lazy('tema-detail', kwargs={'pk': tmpTema}))
-
-#        resp1=ctypes.windll.user32.MessageBoxW(0, f"Request method: GET", "Mensagem Python", 0)# 0 : OK
-#        resp1=ctypes.windll.user32.MessageBoxW(0, f"Request method: POST", "Mensagem Python", 0)# 0 : OK
-#        resp1=ctypes.windll.user32.MessageBoxW(0, f"{form['coment'].data}\n{type(form['coment'].data)}", "Mensagem Python", 0)# 0 : OK
-
-#  INDIVIDUAL DELETE ################################################################################################################        INDIVIDUAL DELETE
-class TemaComentDelete(DeleteView):
-    model = TemaComent
-
-    # fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff----get_success_url
-    def get_success_url(self):
-        if self.request.GET.get('tema','')=='':
-            return reverse_lazy('searchs')
-        else:
-            return reverse_lazy('tema-detail', kwargs={'pk': self.request.GET.get('tema',1)})
-
-
-##    OUTRO TEMA **********************************************************************************************************************************************************************    OUTRO TEMA
-def OutroTema(request):
-
-    # Captura do parâmetro outrotema da URL onde está a categoria do tema e sua respectiva página separadas por um espaço em branco
-    #A categoria em especial, "O laboratório 11" (por exemplo) deve ser parseada de forma distinta das demais,
-    #pois tem um len() igual a 3 e as demais tem um len() igual a dois
-    outrotema = request.GET.get('outrotema',"teoria 1") #caso não encontre retorna o padrão, Teoria 1
-    tmp1=outrotema.split()
-    if len(tmp1)==3:
-        tmpcat=tmp1[0]+ ' ' + tmp1[1] # categoria "O Laboratório"
-        tmppag=int(tmp1[2]) #página
-    else:
-        tmpcat=tmp1[0]# demais categoria
-        tmppag=int(tmp1[1])# página
-
-    #queryset que recupera o respectivo tema a partir de sua categoria/pg
-    tmptema = Tema.objects.filter(categoria__iexact=tmpcat).filter(pagina__exact=tmppag)
-
-    #em caso de algum problema retorna um queryset com o primeiro tema "Teoria 1"
-    if len(tmptema)!=1:
-        tmptema = Tema.objects.filter(categoria__iexact='teoria').filter(pagina__exact=1)
-
-
-    # Render the HTML template e redireciona para o tema recuperado tema/id que por sua vez é
-    #direcionada para TemaDetailView()
-    return redirect(tmptema[0])
 
 ##    CI *********************************************************************************************************************************************************************    CI
+#  LISTA VISUALIZAÇÃO  ################################################################################################################          LISTA VISUALIZAÇÃO
+def CiListView(request):
+    """View function for home ci page of site."""
+
+    num_cis = Ci.objects.all().count()
+
+    cis = Ci.objects.all()
+
+    context = {
+        'num_cis': num_cis,
+        'cis': cis,
+    }
+  # Render the HTML template index.html with the data in the context variable
+    return render(request, 'eletronLab/ci_list.html', context=context)
+
+#  INDIVIDUAL VISUALIZAÇÃO ############################################################################################################     INDIVIDUAL VISUALIZAÇÃO
+class CiDetailView(generic.DetailView):
+    model = Ci
+    template_name = 'eletronLab/ci_detail.html'
+    context_object_name = 'ci'
+    slug_field = 'codci'
+    slug_url_kwarg = 'codci'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+
+        # 1) TEMAS associados ao CI (via coment principal do CI)
+        qs_temas = self.object.coment.temacoment_set.select_related('tema').all()
+        paginator_temas = Paginator(qs_temas, 7)
+        ctx['temas_page'] = paginator_temas.get_page(self.request.GET.get('tpage'))
+
+        # 2) COMENTÁRIOS associados ao CI (via tabela ci_coment)
+        qs_coments = self.object.cicoment_set.select_related('coment').all()
+        paginator_coments = Paginator(qs_coments, 7)
+        ctx['coments_page'] = paginator_coments.get_page(self.request.GET.get('cpage'))
+
+        return ctx
+
 #  INDIVIDUAL CREATE ################################################################################################################        INDIVIDUAL CREATE
 class CiCreate(CreateView):
     model = Ci
-    fields = ['codci', 'semana', 'sobre']
-    success_url = reverse_lazy('home')
+    fields = ['codci', 'semana', 'sobre','coment']
+    success_url = reverse_lazy('cis')
 
 # INDIVIDUAL DELETE ####################################################################################################################          INDIVIDUAL DELETE
 class CiDelete(DeleteView):
     model = Ci
-    success_url = reverse_lazy('home')
+    success_url = reverse_lazy('cis')
 
 # INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
 class CiUpdate(UpdateView):
     model = Ci
-    fields = ['codci', 'semana', 'sobre']
-    success_url = reverse_lazy('home')
+    fields = ['codci', 'semana', 'sobre','coment']
+    success_url = reverse_lazy('cis')
+
+##    CI COMENT ***********************************************************************************************************************************************************    CI COMENT
+#  INDIVIDUAL VISUALIZAÇÃO ##########################################################################################################  INDIVIDUAL VISUALIZAÇÃO
+class CiComentDetailView(generic.DetailView):
+    model = CiComent
+    template_name = 'eletronLab/cicoment_detail.html'  # Specify your own template name/location
+
+# INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
+class CiComentUpdate(UpdateView):
+    model = CiComent
+    fields = ['ci','coment','obs']  # recomendo editar só obs aqui
+    template_name = 'eletronLab/cicoment_form.html'
+
+    def get_success_url(self):
+        return reverse_lazy(
+            'ci-detail',
+            kwargs={'pk': self.object.ci.pk}
+        )
+
+#  INDIVIDUAL DELETE ################################################################################################################        INDIVIDUAL DELETE
+class CiComentDelete(DeleteView):
+    model = CiComent
+    template_name = 'eletronLab/cicoment_confirm_delete.html'
+
+    def get_success_url(self):
+        # volta para o ci-detail de onde o comentário foi removido
+        return reverse_lazy(
+            'ci-detail',
+            kwargs={'pk': self.object.ci.pk}
+        )
+
+#  INDIVIDUAL CREATE  ################################################################################################################        INDIVIDUAL CREATE
+def CiComentCreate(request):
+    tmpCi = request.GET.get('ci')
+    ci_obj = Ci.objects.get(pk=tmpCi)
+
+    if request.method == 'GET':
+        form = CiComentCreateForm()
+        return render(request, 'eletronLab/cicoment_form.html', {'form': form, 'ci': ci_obj})
+
+    form = CiComentCreateForm(request.POST)
+    if not form.is_valid():
+        return render(request, 'eletronLab/cicoment_form.html', {'form': form, 'ci': ci_obj})
+
+    coment_obj = form.cleaned_data['coment']
+    obs = form.cleaned_data.get('obs')
+
+    cicoment, created = CiComent.objects.get_or_create(
+        ci=ci_obj,
+        coment=coment_obj,
+        defaults={'obs': obs}
+    )
+
+    # se já existia, atualiza obs
+    if not created:
+        cicoment.obs = obs
+        cicoment.save(update_fields=['obs'])
+
+    return redirect(reverse_lazy('ci-detail', kwargs={'pk': ci_obj.pk}))
+
+#  INDIVIDUAL CREATE  ALTERNATIVO ################################################################################################################        INDIVIDUAL CREATE ALTERNATIVO
+def CiComentNovoCreate(request):
+    codci = request.GET.get('ci')
+    ci_obj = get_object_or_404(Ci, pk=codci)
+
+    if request.method == 'GET':
+        form = CiComentNovoForm()
+        return render(request, 'eletronLab/cicoment_form.html', {'form': form, 'ci': ci_obj})
+
+    form = CiComentNovoForm(request.POST)
+    if not form.is_valid():
+        return render(request, 'eletronLab/cicoment_form.html', {'form': form, 'ci': ci_obj})
+
+    # 1) cria o comentário
+    coment_obj = Coment.objects.create(
+        assunto=form.cleaned_data['assunto'],
+        detalhe=form.cleaned_data.get('detalhe', '')
+    )
+
+    # 2) cria a associação com obs
+    CiComent.objects.create(
+        ci=ci_obj,
+        coment=coment_obj,
+        obs=form.cleaned_data.get('obs')
+    )
+
+    return redirect(reverse_lazy('ci-detail', kwargs={'pk': ci_obj.pk}))
+
+##    COMPONENT ******************************************************************************************************************************************************    COMPONENT
+#  LISTA VISUALIZAÇÃO  ################################################################################################################          LISTA VISUALIZAÇÃO
+def CompListView(request):
+    """View function for home comp page of site."""
+
+    num_comps = Comp.objects.all().count()
+
+    comps = Comp.objects.all()
+
+    context = {
+        'num_comps': num_comps,
+        'comps': comps,
+    }
+    return render(request, 'eletronLab/comp_list.html', context=context)
+
+#  INDIVIDUAL VISUALIZAÇÃO ############################################################################################################     INDIVIDUAL VISUALIZAÇÃO
+class CompDetailView(generic.DetailView):
+    model = Comp
+    template_name = 'eletronLab/comp_detail.html'
+    context_object_name = 'comp'
+    slug_field = 'codcomp'
+    slug_url_kwarg = 'codcomp'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+
+        # 1) TEMAS associados ao Componente (via coment principal do Comp)
+        qs_temas = self.object.coment.temacoment_set.select_related('tema').all()
+        paginator_temas = Paginator(qs_temas, 7)
+        ctx['temas_page'] = paginator_temas.get_page(self.request.GET.get('tpage'))
+
+        # 2) COMENTÁRIOS associados ao Componente (via tabela comp_coment)
+        qs_coments = self.object.compcoment_set.select_related('coment').all()
+        paginator_coments = Paginator(qs_coments, 7)
+        ctx['coments_page'] = paginator_coments.get_page(self.request.GET.get('cpage'))
+
+        return ctx
+
+#  INDIVIDUAL CREATE ################################################################################################################        INDIVIDUAL CREATE
+class CompCreate(CreateView):
+    model = Comp
+    fields = ['codcomp', 'sobre', 'coment']
+    success_url = reverse_lazy('comps')
+
+# INDIVIDUAL DELETE ####################################################################################################################          INDIVIDUAL DELETE
+class CompDelete(DeleteView):
+    model = Comp
+    success_url = reverse_lazy('comps')
+
+# INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
+class CompUpdate(UpdateView):
+    model = Comp
+    fields = ['codcomp', 'sobre', 'coment']
+    success_url = reverse_lazy('comps')
+
+##    CI COMENT ***********************************************************************************************************************************************************    CI COMENT
+#  INDIVIDUAL VISUALIZAÇÃO ##########################################################################################################  INDIVIDUAL VISUALIZAÇÃO
+class CompComentDetailView(generic.DetailView):
+    model = CompComent
+    template_name = 'eletronLab/compcoment_detail.html'  # Specify your own template name/location
+
+# INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
+class CompComentUpdate(UpdateView):
+    model = CompComent
+    fields = ['comp','coment','obs']  # recomendo editar só obs aqui
+    template_name = 'eletronLab/compcoment_form.html'
+
+    def get_success_url(self):
+        return reverse_lazy(
+            'comp-detail',
+            kwargs={'pk': self.object.comp.pk}
+        )
+
+#  INDIVIDUAL DELETE ################################################################################################################        INDIVIDUAL DELETE
+class CompComentDelete(DeleteView):
+    model = CompComent
+    template_name = 'eletronLab/compcoment_confirm_delete.html'
+
+    def get_success_url(self):
+        # volta para o ci-detail de onde o comentário foi removido
+        return reverse_lazy(
+            'comp-detail',
+            kwargs={'pk': self.object.comp.pk}
+        )
+
+#  INDIVIDUAL CREATE  ################################################################################################################        INDIVIDUAL CREATE
+def CompComentCreate(request):
+    codcomp = request.GET.get('comp')
+    comp_obj = get_object_or_404(Comp, pk=codcomp)
+
+    if request.method == 'GET':
+        form = CompComentCreateForm()
+        return render(request, 'eletronLab/compcoment_form.html', {'form': form, 'comp': comp_obj})
+
+    form = CompComentCreateForm(request.POST)
+    if not form.is_valid():
+        return render(request, 'eletronLab/compcoment_form.html', {'form': form, 'comp': comp_obj})
+
+    coment_obj = form.cleaned_data['coment']
+    obs = form.cleaned_data.get('obs')
+
+    compcoment, created = CompComent.objects.get_or_create(
+        comp=comp_obj,
+        coment=coment_obj,
+        defaults={'obs': obs}
+    )
+    if not created:
+        compcoment.obs = obs
+        compcoment.save(update_fields=['obs'])
+
+    return redirect(reverse_lazy('comp-detail', kwargs={'pk': comp_obj.pk}))
+
+#  INDIVIDUAL CREATE  ALTERNATIVO ################################################################################################################        INDIVIDUAL CREATE ALTERNATIVO
+def CompComentNovoCreate(request):
+    codcomp = request.GET.get('comp')
+    comp_obj = get_object_or_404(Comp, pk=codcomp)
+
+    if request.method == 'GET':
+        form = CompComentNovoForm()
+        return render(request, 'eletronLab/compcoment_form.html', {'form': form, 'comp': comp_obj})
+
+    form = CompComentNovoForm(request.POST)
+    if not form.is_valid():
+        return render(request, 'eletronLab/compcoment_form.html', {'form': form, 'comp': comp_obj})
+
+    # 1) cria o comentário
+    coment_obj = Coment.objects.create(
+        assunto=form.cleaned_data['assunto'],
+        detalhe=form.cleaned_data.get('detalhe', '')
+    )
+
+    # 2) cria a associação com obs
+    CompComent.objects.create(
+        comp=comp_obj,
+        coment=coment_obj,
+        obs=form.cleaned_data.get('obs')
+    )
+
+    return redirect(reverse_lazy('comp-detail', kwargs={'pk': comp_obj.pk}))
+
+

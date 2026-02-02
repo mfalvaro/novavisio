@@ -7,7 +7,7 @@
 """
 ##-----------------------------IMPORTS------------------------------------------
 from django import forms
-from eletronLab.models import Coment
+from eletronLab.models import Coment, CiComent, CompComent
 from eletronLab.models import TemaComent
 #from django.core.exceptions import ValidationError
 
@@ -38,7 +38,39 @@ class TemaComentCreateForm(forms.ModelForm):
     class Meta:
         model = TemaComent
         fields = ['tema', 'coment']
-##        widgets = {
-##            'coment': forms.ModelMultipleChoiceField(widget = forms.CheckboxSelectMultiple, queryset = Coment.objects.all(),),
-##        }
 
+# ##################################################################################################################################
+class CiComentCreateForm(forms.ModelForm):
+    coment = forms.ModelChoiceField(
+        queryset=Coment.objects.all(),
+        label='Comentário'
+    )
+
+    class Meta:
+        model = CiComent
+        fields = ['coment', 'obs']   # ← tira 'ci'
+
+
+# ##################################################################################################################################
+class CiComentNovoForm(forms.Form):
+    assunto = forms.CharField(max_length=75)
+    detalhe = forms.CharField(max_length=100, required=False)
+    obs = forms.CharField(max_length=100, required=False)
+
+# ##################################################################################################################################
+class CompComentCreateForm(forms.ModelForm):
+    coment = forms.ModelChoiceField(
+        queryset=Coment.objects.all(),
+        label='Comentário'
+    )
+
+    class Meta:
+        model = CompComent
+        fields = ['coment', 'obs']   # ← tira 'ci'
+
+
+# ##################################################################################################################################
+class CompComentNovoForm(forms.Form):
+    assunto = forms.CharField(max_length=75)
+    detalhe = forms.CharField(max_length=100, required=False)
+    obs = forms.CharField(max_length=100, required=False)

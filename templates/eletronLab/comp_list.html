@@ -1,0 +1,49 @@
+<!-- templates/eletronLab/ci_home.html-->
+{% extends 'eletronLab/home_eLab.html' %}
+
+{% block title %}eLab Circuitos integrados{% endblock %}
+<!-- Add additional CSS, img in static files -->
+{% load static %}
+
+{% block content %}
+<p>
+	<span id="parag1">Componentes estudados</span>
+	<span>&nbsp;&nbsp;&nbsp;</span>
+	<span id="parag2"><a href="{% url 'comp_create' %}">Adicionar componente...</a></span>
+</p>
+	{% if comps %}
+<ol>
+	{% for comp in comps %}
+	<li>
+		<a href="{{ comp.get_absolute_url }}">{{ comp.codcomp }}</a>  |  {{ comp.sobre }}
+		<a href="{{ comp.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
+		<a href="{{ comp.get_absolute_url }}/delete">  <img src="{% static 'res/' %}delete.png"></a>
+	</li>
+	{% endfor %}
+</ol>
+		{% else %}
+<p>Não existem componentes no lab.</p>
+	{% endif %}
+	</br>
+{% endblock %}
+
+
+{% block content1 %}
+<p id="parag1">Componentes estudados</p>
+	{% if comps %}
+<ol>
+	{% for comp in comps %}
+	<li>
+		{{ comp.codcomp }} | <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/comp/comp_{{ comp.codcomp }}.jpg">{{ comp.codcomp }}</a> - {{ comp.sobre }}
+	</li>
+	{% endfor %}
+</ol>
+	{% else %}
+<p>Não existem componentes no lab.</p>
+	{% endif %}
+	</br>
+{% endblock %}
+
+
+
+

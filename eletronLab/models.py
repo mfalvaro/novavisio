@@ -21,7 +21,7 @@ class Coment(models.Model):
     detalhe = models.CharField(db_column='Detalhe', max_length=255, blank=True, null=True, help_text='Descreva detalhes ...')  # Field name made lowercase.
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'coment'
         unique_together = (('assunto', 'detalhe'),)
         ordering = ['assunto', 'detalhe']
@@ -45,7 +45,7 @@ class Tema(models.Model):
     status = models.BooleanField(db_column='Status',blank=False, null=True, default=False)  # Field name made lowercase.
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'tema'
         ordering = ['semana', 'ordem']
 
@@ -65,7 +65,7 @@ class TemaComent(models.Model):
     data = models.DateTimeField(db_column='Data', blank=True, null=True, auto_now_add=True)  # Field name made lowercase.
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'tema_coment'
         unique_together = (('tema', 'coment'),)
         ordering = ['tema', 'coment']
@@ -83,11 +83,10 @@ class Ci(models.Model):
     codci = models.CharField(db_column='Codci', primary_key=True, max_length=15, blank=True, null=False, help_text='Nome do circuito integrado')
     semana = models.IntegerField(db_column='Semana', blank=True, null=True, help_text='Semana que apareceu pela primeira vez')
     sobre = models.CharField(db_column='Sobre', max_length=75, blank=True, null=True, help_text='Descrição do circuito integrado')
-#    coment = models.IntegerField(db_column='Coment', blank=True, null=True, help_text='id do respectivo comentário')
     coment = models.ForeignKey(Coment, models.DO_NOTHING, db_column='Coment', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'ci'
         ordering = ['semana']
 
@@ -96,6 +95,69 @@ class Ci(models.Model):
         return f'semana {self.semana} | ci {self.codci} - {self.sobre}'
 
     def get_absolute_url(self):
-        """Returns the url to access a detail record."""
-        return f"ci/{str(self.codci)}"
+        """Returns the url to access a detail record for a ci."""
+        return reverse('ci-detail', args=[str(self.codci)])
 
+# ########################################################################################################################################################################################
+class Comp(models.Model):
+    codcomp = models.CharField(db_column='codcomp', primary_key=True, max_length=15, blank=True, null=False, help_text='Nome do componente')
+    sobre = models.CharField(db_column='sobre', max_length=75, blank=True, null=True, help_text='Descrição do componente')
+    coment = models.ForeignKey(Coment, models.DO_NOTHING, db_column='coment_id', blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        #managed = False
+        db_table = 'comp'
+        ordering = ['codcomp']
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return f'Componente {self.codcomp} - {self.sobre}'
+
+    def get_absolute_url(self):
+        """Returns the url to access a detail record."""
+        #return f"comp/{str(self.codcomp)}"
+        return reverse('comp-detail', args=[str(self.codcomp)])
+
+# ########################################################################################################################################################################################
+class CiComent(models.Model):
+    codci_coment = models.AutoField(db_column='codci_coment', primary_key=True)  # Field name made lowercase.
+    ci = models.ForeignKey(Ci, models.DO_NOTHING, db_column='ci_id', blank=True, null=True)  # Field name made lowercase.
+    coment = models.ForeignKey(Coment, models.DO_NOTHING, db_column='coment_id', blank=True, null=True)  # Field name made lowercase.
+    obs = models.CharField(db_column='obs', max_length=75, blank=True, null=True, help_text='Observação')
+    data = models.DateTimeField(db_column='data', blank=True, null=True, auto_now_add=True)  # Field name made lowercase.
+
+    class Meta:
+        #managed = False
+        db_table = 'ci_coment'
+        unique_together = (('ci', 'coment'),)
+        ordering = ['ci', 'coment']
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return f'{self.ci.semana}.{self.ci.sobre}-{self.coment.assunto}::{self.coment.detalhe}'
+
+    def get_absolute_url(self):
+        """Returns the url to access a detail record for this book."""
+        return reverse('cicoment-detail', args=[str(self.codci_coment)])
+
+# ########################################################################################################################################################################################
+class CompComent(models.Model):
+    codcomp_coment = models.AutoField(db_column='codcomp_coment', primary_key=True)  # Field name made lowercase.
+    comp = models.ForeignKey(Comp, models.DO_NOTHING, db_column='comp_id', blank=True, null=True, help_text='Componente')  # Field name made lowercase.
+    coment = models.ForeignKey(Coment, models.DO_NOTHING, db_column='coment_id', blank=True, null=True, help_text='Comentário')  # Field name made lowercase.
+    obs = models.CharField(db_column='obs', max_length=75, blank=True, null=True, help_text='Observação')
+    data = models.DateTimeField(db_column='data', blank=True, null=True, auto_now_add=True)  # Field name made lowercase.
+
+    class Meta:
+        #managed = False
+        db_table = 'comp_coment'
+        unique_together = (('comp', 'coment'),)
+        ordering = ['comp', 'coment']
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return f'{self.comp.codcomp}.{self.comp.sobre}-{self.coment.assunto}::{self.coment.detalhe}'
+
+    def get_absolute_url(self):
+        """Returns the url to access a detail record for this book."""
+        return reverse('compcoment-detail', args=[str(self.codcomp_coment)])

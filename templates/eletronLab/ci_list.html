@@ -1,0 +1,49 @@
+<!-- templates/eletronLab/ci_home.html-->
+{% extends 'eletronLab/home_eLab.html' %}
+
+{% block title %}eLab Circuitos integrados{% endblock %}
+<!-- Add additional CSS, img in static files -->
+{% load static %}
+
+{% block content %}
+<p>
+	<span id="parag1">Circuitos integrados estudados</span>
+	<span>&nbsp;&nbsp;&nbsp;</span>
+	<span id="parag2"><a href="{% url 'ci_create' %}">Adicionar ci...</a></span>
+</p>
+	{% if cis %}
+<ol>
+	{% for ci in cis %}
+	<li>
+		Semana {{ ci.semana }} | <a href="{{ ci.get_absolute_url }}">{{ ci.codci }}</a> - {{ ci.sobre }}
+		<a href="{{ ci.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
+		<a href="{{ ci.get_absolute_url }}/delete">  <img src="{% static 'res/' %}delete.png"></a>
+	</li>
+	{% endfor %}
+</ol>
+		{% else %}
+<p>Não existem ci´s no lab.</p>
+	{% endif %}
+	</br>
+{% endblock %}
+
+
+{% block content1 %}
+<p id="parag1">Circuitos integrados estudados</p>
+	{% if cis %}
+<ol>
+	{% for ci in cis %}
+	<li>
+		Semana {{ ci.semana }} | <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/ci/ci_{{ ci.codci }}.jpg">{{ ci.codci }}</a> - {{ ci.sobre }}
+	</li>
+	{% endfor %}
+</ol>
+	{% else %}
+<p>Não existem ci´s no lab.</p>
+	{% endif %}
+	</br>
+{% endblock %}
+
+
+
+
