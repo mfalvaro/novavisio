@@ -18,6 +18,11 @@
 		text-align: left;
 		font-size: 20pt;
 		}
+/* parágrafo tipo um usado em coment-detail */
+.parag3 {
+	text-align: left;
+	font-size: 20pt;
+}
 
 		/* parágrafo tipo um usado em coment-detail */
 #parag2 {
@@ -25,6 +30,12 @@
 		background: #FFC;
 		font-size: 12pt;
 		}
+/* parágrafo tipo um usado em coment-detail */
+.parag4 {
+	text-align: left;
+	background: #FFC;
+	font-size: 12pt;
+}
 
 		
 /* CLASSES____________________________________________________________________________________________________________________________________________________ */

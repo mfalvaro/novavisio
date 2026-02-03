@@ -42,7 +42,7 @@ from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
-
+from django import forms
 
 
 ##-----------------------------GLOBALS--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -306,14 +306,18 @@ class ComentDetailView(generic.DetailView):
 
         # 1) TEMAS associados ao coment (via coment principal do CI)
         qs_temas = self.object.temacoment_set.select_related('tema').all()
-        paginator_temas = Paginator(qs_temas, 7)
+        paginator_temas = Paginator(qs_temas, 3)
         ctx['temas_page'] = paginator_temas.get_page(self.request.GET.get('tpage'))
 
-        # 2) COMENTÁRIOS associados ao CI (via tabela ci_coment)
-        #qs_cis = self.object.cicoment_set.select_related('ci').all()
+        # 2) CIS associados ao coment (via tabela ci_coment)
         qs_cis = CiComent.objects.filter(coment=self.object).select_related('ci')
-        paginator_coments = Paginator(qs_cis, 7)
-        ctx['cis_page'] = paginator_coments.get_page(self.request.GET.get('cpage'))
+        paginator_cis = Paginator(qs_cis, 3)
+        ctx['cis_page'] = paginator_cis.get_page(self.request.GET.get('cpage'))
+
+        # 3) COMPONENTES associados ao coment (via tabela comp_coment)
+        qs_comps = CompComent.objects.filter(coment=self.object).select_related('comp')
+        paginator_comps = Paginator(qs_comps, 3)
+        ctx['comps_page'] = paginator_comps.get_page(self.request.GET.get('cnpage'))
 
         return ctx
 
@@ -359,6 +363,12 @@ class ComentUpdate(UpdateView):
     model = Coment
     fields = ['assunto', 'detalhe']
 
+    def get_form_class(self):
+        form_class = super().get_form_class()
+        form_class.base_fields['detalhe'].widget = forms.Textarea()
+        return form_class
+
+
 # INDIVIDUAL DELETE ####################################################################################################################          INDIVIDUAL DELETE
 class ComentDelete(DeleteView):
     model = Coment
@@ -372,25 +382,142 @@ class TemaComentDetailView(generic.DetailView):
     template_name = 'eletronLab/temacoment_detail.html'  # Specify your own template name/location
 
 #  INDIVIDUAL CREATE MULTIPLE ################################################################################################################        INDIVIDUAL CREATE MULTIPLE
-def TemaComentCreate(request):
-    #Guarda o id do tema para criar os TemaComents de comentários já existentes selecionados (select multiple)
-    tmpTema=request.GET.get('tema',1)
-    #verifica o método de chamada GET ou POST
-    if request.method == 'GET':
-        context = {'form': TemaComentCreateForm(initial={'tema':tmpTema},)}#inicializa o formulário em branco
-        return render(request, 'eletronLab/temacoment_form.html', context)
-    elif request.method == 'POST':
-        form = TemaComentCreateForm(request.POST) #iniciliza o formulário com os dados selecionadas pelo usuário
-        #insere os registros dos comentários selecionados pelo usuário para o tema (tmpTema)
-        for cmt in form['coment'].data:
-            tmpTemaCmt, created = TemaComent.objects.get_or_create(tema= Tema.objects.get(pk=tmpTema), coment= Coment.objects.get(pk=cmt))
-            #tmpTemaCmt = TemaComent(tema= Tema.objects.get(pk=tmpTema), coment= Coment.objects.get(pk=cmt))
-            #tmpTemaCmt.save()
-        return redirect(reverse_lazy('tema-detail', kwargs={'pk': tmpTema}))
+##def TemaComentCreate(request):
+##    #Guarda o id do tema para criar os TemaComents de comentários já existentes selecionados (select multiple)
+##    tmpTema=request.GET.get('tema',1)
+##    #verifica o método de chamada GET ou POST
+##    if request.method == 'GET':
+##        context = {'form': TemaComentCreateForm(initial={'tema':tmpTema},)}#inicializa o formulário em branco
+##        return render(request, 'eletronLab/temacoment_form.html', context)
+##    elif request.method == 'POST':
+##        form = TemaComentCreateForm(request.POST) #iniciliza o formulário com os dados selecionadas pelo usuário
+##        #insere os registros dos comentários selecionados pelo usuário para o tema (tmpTema)
+##        for cmt in form['coment'].data:
+##            tmpTemaCmt, created = TemaComent.objects.get_or_create(tema= Tema.objects.get(pk=tmpTema), coment= Coment.objects.get(pk=cmt))
+##            #tmpTemaCmt = TemaComent(tema= Tema.objects.get(pk=tmpTema), coment= Coment.objects.get(pk=cmt))
+##            #tmpTemaCmt.save()
+##        return redirect(reverse_lazy('tema-detail', kwargs={'pk': tmpTema}))
+##
+###        resp1=ctypes.windll.user32.MessageBoxW(0, f"Request method: GET", "Mensagem Python", 0)# 0 : OK
+###        resp1=ctypes.windll.user32.MessageBoxW(0, f"Request method: POST", "Mensagem Python", 0)# 0 : OK
+###        resp1=ctypes.windll.user32.MessageBoxW(0, f"{form['coment'].data}\n{type(form['coment'].data)}", "Mensagem Python", 0)# 0 : OK
 
-#        resp1=ctypes.windll.user32.MessageBoxW(0, f"Request method: GET", "Mensagem Python", 0)# 0 : OK
-#        resp1=ctypes.windll.user32.MessageBoxW(0, f"Request method: POST", "Mensagem Python", 0)# 0 : OK
-#        resp1=ctypes.windll.user32.MessageBoxW(0, f"{form['coment'].data}\n{type(form['coment'].data)}", "Mensagem Python", 0)# 0 : OK
+
+
+
+
+
+
+##def TemaComentCreate(request):
+##    tmpTema = request.GET.get('tema', '')        # quando vier do tema-detail
+##    tmpComent = request.GET.get('coment', '')    # quando vier do coment-detail
+##    origin = request.GET.get('from', '')         # "coment" ou ""
+##
+##    if request.method == 'GET':
+##        form = TemaComentCreateForm(initial={'tema': tmpTema, 'coment': tmpComent})
+##
+##        # se veio do coment-detail, trava o campo coment
+##        if tmpComent:
+##            form.fields['coment'].disabled = True
+##
+##        return render(request, 'eletronLab/temacoment_form.html', {'form': form})
+##
+##    # POST
+##    form = TemaComentCreateForm(request.POST)
+##    if not form.is_valid():
+##        if tmpComent:
+##            form.fields['coment'].disabled = True
+##        return render(request, 'eletronLab/temacoment_form.html', {'form': form})
+##
+##    tema_obj = form.cleaned_data['tema']
+##
+##    # se o coment estava disabled, ele não vem no POST -> pegue do GET
+##    if tmpComent:
+##        coment_obj = get_object_or_404(Coment, pk=tmpComent)
+##    else:
+##        coment_obj = form.cleaned_data['coment']
+##
+##    TemaComent.objects.get_or_create(tema=tema_obj, coment=coment_obj)
+##
+##    # redireciona pra origem
+##    if origin == 'coment' and tmpComent:
+##        return redirect(reverse_lazy('coment-detail', kwargs={'pk': tmpComent}))
+##
+##    return redirect(reverse_lazy('tema-detail', kwargs={'pk': tema_obj.pk}))
+
+
+
+
+
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse_lazy
+
+from .models import Tema, Coment, TemaComent
+from .forms import TemaComentCreateForm
+
+
+def TemaComentCreate(request):
+    # vindo do tema-detail
+    tmpTema = request.GET.get('tema', '')
+
+    # vindo do coment-detail
+    tmpComent = request.GET.get('coment', '')
+    origin = request.GET.get('from', '')  # "coment" ou ""
+
+    if request.method == 'GET':
+        initial = {}
+        if tmpTema:
+            initial['tema'] = tmpTema
+        if tmpComent:
+            initial['coment'] = tmpComent
+
+        form = TemaComentCreateForm(initial=initial)
+
+        # opcional: se veio do comentário, trava o campo coment
+        if tmpComent and 'coment' in form.fields:
+            form.fields['coment'].disabled = True
+
+        return render(request, 'eletronLab/temacoment_form.html', {'form': form})
+
+    # POST
+    post_data = request.POST.copy()
+
+    # se veio do comentário e o campo estava disabled,
+    # ele NÃO vem no POST -> injeta aqui
+    if tmpComent:
+        post_data['coment'] = tmpComent
+
+    form = TemaComentCreateForm(post_data)
+
+    if not form.is_valid():
+        if tmpComent and 'coment' in form.fields:
+            form.fields['coment'].disabled = True
+        return render(request, 'eletronLab/temacoment_form.html', {'form': form})
+
+    tema_obj = form.cleaned_data['tema']
+    coment_obj = form.cleaned_data['coment']
+
+    TemaComent.objects.get_or_create(tema=tema_obj, coment=coment_obj)
+
+    # volta para a origem
+    if origin == 'coment' and tmpComent:
+        return redirect(reverse_lazy('coment-detail', kwargs={'pk': tmpComent}))
+
+    return redirect(reverse_lazy('tema-detail', kwargs={'pk': tema_obj.pk}))
+
+
+
+
+
+
+
+
+
+
+
 
 
 #  INDIVIDUAL DELETE ################################################################################################################        INDIVIDUAL DELETE
@@ -578,6 +705,8 @@ class CiUpdate(UpdateView):
     fields = ['codci', 'semana', 'sobre','coment']
     success_url = reverse_lazy('cis')
 
+
+
 ##    CI COMENT ***********************************************************************************************************************************************************    CI COMENT
 #  INDIVIDUAL VISUALIZAÇÃO ##########################################################################################################  INDIVIDUAL VISUALIZAÇÃO
 class CiComentDetailView(generic.DetailView):
@@ -589,6 +718,11 @@ class CiComentUpdate(UpdateView):
     model = CiComent
     fields = ['ci','coment','obs']  # recomendo editar só obs aqui
     template_name = 'eletronLab/cicoment_form.html'
+
+    def get_form_class(self):
+        form_class = super().get_form_class()
+        form_class.base_fields['obs'].widget = forms.Textarea()
+        return form_class
 
     def get_success_url(self):
         return reverse_lazy(
@@ -609,18 +743,101 @@ class CiComentDelete(DeleteView):
         )
 
 #  INDIVIDUAL CREATE  ################################################################################################################        INDIVIDUAL CREATE
+##def CiComentCreate(request):
+##    tmpCi = request.GET.get('ci')
+##    ci_obj = Ci.objects.get(pk=tmpCi)
+##
+##    if request.method == 'GET':
+##        form = CiComentCreateForm()
+##        return render(request, 'eletronLab/cicoment_form.html', {'form': form, 'ci': ci_obj})
+##
+##    form = CiComentCreateForm(request.POST)
+##    if not form.is_valid():
+##        return render(request, 'eletronLab/cicoment_form.html', {'form': form, 'ci': ci_obj})
+##
+##    coment_obj = form.cleaned_data['coment']
+##    obs = form.cleaned_data.get('obs')
+##
+##    cicoment, created = CiComent.objects.get_or_create(
+##        ci=ci_obj,
+##        coment=coment_obj,
+##        defaults={'obs': obs}
+##    )
+##
+##    # se já existia, atualiza obs
+##    if not created:
+##        cicoment.obs = obs
+##        cicoment.save(update_fields=['obs'])
+##
+##    return redirect(reverse_lazy('ci-detail', kwargs={'pk': ci_obj.pk}))
+
+
+
+
+
+
+
+
+
+
+
+
+
 def CiComentCreate(request):
-    tmpCi = request.GET.get('ci')
-    ci_obj = Ci.objects.get(pk=tmpCi)
+    tmpCi = request.GET.get('ci', '')           # vindo do ci-detail
+    tmpComent = request.GET.get('coment', '')   # vindo do coment-detail
+    origin = request.GET.get('from', '')        # "coment" ou ""
+
+    # tenta obter o objeto CI se veio pelo GET
+    ci_obj = None
+    if tmpCi:
+        ci_obj = get_object_or_404(Ci, pk=tmpCi)
 
     if request.method == 'GET':
-        form = CiComentCreateForm()
-        return render(request, 'eletronLab/cicoment_form.html', {'form': form, 'ci': ci_obj})
+        initial = {}
+        if tmpCi:
+            initial['ci'] = tmpCi
+        if tmpComent:
+            initial['coment'] = tmpComent
 
-    form = CiComentCreateForm(request.POST)
+        form = CiComentCreateForm(initial=initial)
+
+        # se veio do comentário, trava o campo coment (opcional)
+        if tmpComent and 'coment' in form.fields:
+            form.fields['coment'].disabled = True
+
+        # se veio do ci-detail, trava o campo ci (opcional)
+        if tmpCi and 'ci' in form.fields:
+            form.fields['ci'].disabled = True
+
+        return render(request, 'eletronLab/cicoment_form.html', {
+            'form': form,
+            'ci': ci_obj,   # se o template usa isso para título etc.
+        })
+
+    # POST
+    post_data = request.POST.copy()
+
+    # se o campo estava disabled ele não vem no POST -> injeta
+    if tmpComent:
+        post_data['coment'] = tmpComent
+    if tmpCi:
+        post_data['ci'] = tmpCi
+
+    form = CiComentCreateForm(post_data)
     if not form.is_valid():
-        return render(request, 'eletronLab/cicoment_form.html', {'form': form, 'ci': ci_obj})
+        # re-disable para continuar travado na tela
+        if tmpComent and 'coment' in form.fields:
+            form.fields['coment'].disabled = True
+        if tmpCi and 'ci' in form.fields:
+            form.fields['ci'].disabled = True
 
+        return render(request, 'eletronLab/cicoment_form.html', {
+            'form': form,
+            'ci': ci_obj,
+        })
+
+    ci_obj = form.cleaned_data['ci']
     coment_obj = form.cleaned_data['coment']
     obs = form.cleaned_data.get('obs')
 
@@ -635,7 +852,23 @@ def CiComentCreate(request):
         cicoment.obs = obs
         cicoment.save(update_fields=['obs'])
 
+    # redirect conforme origem
+    if origin == 'coment' and tmpComent:
+        return redirect(reverse_lazy('coment-detail', kwargs={'pk': tmpComent}))
+
     return redirect(reverse_lazy('ci-detail', kwargs={'pk': ci_obj.pk}))
+
+
+
+
+
+
+
+
+
+
+
+
 
 #  INDIVIDUAL CREATE  ALTERNATIVO ################################################################################################################        INDIVIDUAL CREATE ALTERNATIVO
 def CiComentNovoCreate(request):
@@ -720,6 +953,13 @@ class CompUpdate(UpdateView):
     fields = ['codcomp', 'sobre', 'coment']
     success_url = reverse_lazy('comps')
 
+    def get_form_class(self):
+        form_class = super().get_form_class()
+        form_class.base_fields['sobre'].widget = forms.Textarea()
+        return form_class
+
+
+
 ##    CI COMENT ***********************************************************************************************************************************************************    CI COMENT
 #  INDIVIDUAL VISUALIZAÇÃO ##########################################################################################################  INDIVIDUAL VISUALIZAÇÃO
 class CompComentDetailView(generic.DetailView):
@@ -731,6 +971,11 @@ class CompComentUpdate(UpdateView):
     model = CompComent
     fields = ['comp','coment','obs']  # recomendo editar só obs aqui
     template_name = 'eletronLab/compcoment_form.html'
+
+    def get_form_class(self):
+        form_class = super().get_form_class()
+        form_class.base_fields['obs'].widget = forms.Textarea()
+        return form_class
 
     def get_success_url(self):
         return reverse_lazy(
@@ -751,18 +996,92 @@ class CompComentDelete(DeleteView):
         )
 
 #  INDIVIDUAL CREATE  ################################################################################################################        INDIVIDUAL CREATE
+##def CompComentCreate(request):
+##    codcomp = request.GET.get('comp')
+##    comp_obj = get_object_or_404(Comp, pk=codcomp)
+##
+##    if request.method == 'GET':
+##        form = CompComentCreateForm()
+##        return render(request, 'eletronLab/compcoment_form.html', {'form': form, 'comp': comp_obj})
+##
+##    form = CompComentCreateForm(request.POST)
+##    if not form.is_valid():
+##        return render(request, 'eletronLab/compcoment_form.html', {'form': form, 'comp': comp_obj})
+##
+##    coment_obj = form.cleaned_data['coment']
+##    obs = form.cleaned_data.get('obs')
+##
+##    compcoment, created = CompComent.objects.get_or_create(
+##        comp=comp_obj,
+##        coment=coment_obj,
+##        defaults={'obs': obs}
+##    )
+##    if not created:
+##        compcoment.obs = obs
+##        compcoment.save(update_fields=['obs'])
+##
+##    return redirect(reverse_lazy('comp-detail', kwargs={'pk': comp_obj.pk}))
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse_lazy
+
+from .models import Comp, Coment, CompComent
+from .forms import CompComentCreateForm
+
+
 def CompComentCreate(request):
-    codcomp = request.GET.get('comp')
-    comp_obj = get_object_or_404(Comp, pk=codcomp)
+    codcomp = request.GET.get('comp', '')        # vindo do comp-detail
+    tmpComent = request.GET.get('coment', '')    # vindo do coment-detail
+    origin = request.GET.get('from', '')         # "coment" ou ""
+
+    comp_obj = None
+    if codcomp:
+        comp_obj = get_object_or_404(Comp, pk=codcomp)
 
     if request.method == 'GET':
-        form = CompComentCreateForm()
-        return render(request, 'eletronLab/compcoment_form.html', {'form': form, 'comp': comp_obj})
+        initial = {}
+        if codcomp:
+            initial['comp'] = codcomp
+        if tmpComent:
+            initial['coment'] = tmpComent
 
-    form = CompComentCreateForm(request.POST)
+        form = CompComentCreateForm(initial=initial)
+
+        # opcional: trava os campos quando já vierem definidos
+        if codcomp and 'comp' in form.fields:
+            form.fields['comp'].disabled = True
+        if tmpComent and 'coment' in form.fields:
+            form.fields['coment'].disabled = True
+
+        return render(request, 'eletronLab/compcoment_form.html', {
+            'form': form,
+            'comp': comp_obj,
+        })
+
+    # POST
+    post_data = request.POST.copy()
+
+    # campos disabled não vão no POST -> injeta
+    if codcomp:
+        post_data['comp'] = codcomp
+    if tmpComent:
+        post_data['coment'] = tmpComent
+
+    form = CompComentCreateForm(post_data)
     if not form.is_valid():
-        return render(request, 'eletronLab/compcoment_form.html', {'form': form, 'comp': comp_obj})
+        if codcomp and 'comp' in form.fields:
+            form.fields['comp'].disabled = True
+        if tmpComent and 'coment' in form.fields:
+            form.fields['coment'].disabled = True
 
+        return render(request, 'eletronLab/compcoment_form.html', {
+            'form': form,
+            'comp': comp_obj,
+        })
+
+    comp_obj = form.cleaned_data['comp']
     coment_obj = form.cleaned_data['coment']
     obs = form.cleaned_data.get('obs')
 
@@ -775,7 +1094,18 @@ def CompComentCreate(request):
         compcoment.obs = obs
         compcoment.save(update_fields=['obs'])
 
+    # redirect conforme origem
+    if origin == 'coment' and tmpComent:
+        return redirect(reverse_lazy('coment-detail', kwargs={'pk': tmpComent}))
+
     return redirect(reverse_lazy('comp-detail', kwargs={'pk': comp_obj.pk}))
+
+
+
+
+
+
+
 
 #  INDIVIDUAL CREATE  ALTERNATIVO ################################################################################################################        INDIVIDUAL CREATE ALTERNATIVO
 def CompComentNovoCreate(request):

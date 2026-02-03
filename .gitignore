@@ -1,9 +1,12 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
 # Django
 staticfiles/
 
 # Ambiente
 .env
+

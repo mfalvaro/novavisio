@@ -25,7 +25,10 @@
 
 <!-- LISTA DE TEMAS ASSOCIADOS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
 <div style="margin-left:20px;margin-top:20px">
-	<h4>Temas associados</h4>
+	<p>
+		<span id="parag1"">Temas associados</span>
+		<span id="parag2"><a href="{% url 'temacoment_create' %}?coment={{ coment.codcoment }}&from=coment">+...</a></span>
+	</p>
 	<ul>
 		{% for tc in temas_page %}
 		<li>
@@ -36,10 +39,19 @@
 		{% endfor %}
 	</ul>
 
-	<!-- PAGINATOR DE TEMAS **************************************************************************************************************** -->
+	<!-- PAGINATOR DE COMENTÁRIO-TEMAS **************************************************************************************************************** -->
 	{% if temas_page.has_other_pages %}
 	{% if temas_page.has_previous %}
-	<a href="?tpage={{ temas_page.previous_page_number }}">previous</a>
+	<a href="?tpage={{ temas_page.previous_page_number }}
+		 {% if cis_page.number %}
+			 &cpage={{ cis_page.number }}
+		 {% endif %}
+		 {% if comps_page.number %}
+			 &cnpage={{ comps_page.number }}
+		 {% endif %}
+	   ">
+		previous
+	</a>
 	{% else %}
 	previous
 	{% endif %}
@@ -47,7 +59,17 @@
 	Page {{ temas_page.number }} of {{ temas_page.paginator.num_pages }}
 
 	{% if temas_page.has_next %}
-	<a href="?tpage={{ temas_page.next_page_number }}">next</a>
+	<a href="?tpage={{ temas_page.next_page_number }}
+		 {% if cis_page.number %}
+			 &cpage={{ cis_page.number }}
+		 {% endif %}
+		 {% if comps_page.number %}
+			 &cnpage={{ comps_page.number }}
+		 {% endif %}
+
+	   ">
+		next
+	</a>
 	{% else %}
 	next
 	{% endif %}
@@ -58,7 +80,10 @@
 
 <!-- LISTA DE CIS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
 <div style="margin-left:20px;margin-top:20px">
-	<h4>Cis associados</h4>
+	<p>
+		<span id="parag1" ">Cis associados</span>
+		<span id="parag2"><a href="{% url 'cicoment_create' %}?coment={{ coment.codcoment }}&from=coment">+...</a></span>
+	</p>
 	<ul>
 		{% for cc in cis_page %}
 		<li>
@@ -72,12 +97,15 @@
 		<p>Não há cis associados a este comentário.</p>
 		{% endfor %}
 	</ul>
-	<!-- PAGINATOR DE COMENTÁRIOS **************************************************************************************************************** -->
+	<!-- PAGINATOR DE COMENTÁRIO-CIS **************************************************************************************************************** -->
 	{% if cis_page.has_other_pages %}
 	{% if cis_page.has_previous %}
 	<a href="?cpage={{ cis_page.previous_page_number }}
 		 {% if temas_page.number %}
 			 &tpage={{ temas_page.number }}
+		 {% endif %}
+		 {% if comps_page.number %}
+			 &cnpage={{ comps_page.number }}
 		 {% endif %}
 		 ">
 		previous
@@ -92,6 +120,66 @@
 	<a href="?cpage={{ cis_page.next_page_number }}
 		 {% if temas_page.number %}
 			 &tpage={{ temas_page.number }}
+		 {% endif %}
+		 {% if comps_page.number %}
+			 &cnpage={{ comps_page.number }}
+		 {% endif %}
+		 ">
+		next
+	</a>
+	{% else %}
+	next
+	{% endif %}
+	{% endif %}
+</div>
+
+
+
+<!-- LISTA DE COMPONENTES @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+<div style="margin-left:20px;margin-top:20px">
+	<p>
+		<span id="parag1" ">Componentes associados</span>
+		<span id="parag2"><a href="{% url 'compcoment-create' %}?coment={{ coment.codcoment }}&from=coment">+...</a></span>
+	</p>
+	<ul>
+		{% for cc in comps_page %}
+		<li>
+			<a href="{{ cc.comp.get_absolute_url }}">
+				{{ cc.comp.codcomp }} - {{ cc.comp.sobre }}
+			</a>
+			{% if cc.obs %} — {{ cc.obs }}{% endif %}
+
+		</li>
+		{% empty %}
+		<p>Não há componentes associados a este comentário.</p>
+		{% endfor %}
+	</ul>
+	<!-- PAGINATOR DE COMENTÁRIO-COMPONENTE **************************************************************************************************************** -->
+	{% if comps_page.has_other_pages %}
+	{% if comps_page.has_previous %}
+	<a href="?cnpage={{ comps_page.previous_page_number }}
+		 {% if temas_page.number %}
+			 &tpage={{ temas_page.number }}
+		 {% endif %}
+		 {% if cis_page.number %}
+			 &cpage={{ cis_page.number }}
+		 {% endif %}
+		 ">
+		previous
+	</a>
+	{% else %}
+	previous
+	{% endif %}
+
+	Page {{ comps_page.number }} of {{ comps_page.paginator.num_pages }}
+
+	{% if comps_page.has_next %}
+	<a href="?cnpage={{ comps_page.next_page_number }}
+		 {% if temas_page.number %}
+			 &tpage={{ temas_page.number }}
+		 {% endif %}
+		 {% if cis_page.number %}
+			 &cpage={{ cis_page.number }}
 		 {% endif %}
 		 ">
 		next

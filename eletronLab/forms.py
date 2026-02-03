@@ -14,6 +14,7 @@ from eletronLab.models import TemaComent
 ##--------------------FUNCTIONS AND CLASSES-------------------------------------
 # ##################################################################################################################################
 class ComentCreateForm(forms.ModelForm):
+    detalhe = forms.CharField(widget=forms.Textarea, required=False)
     class Meta:
         model = Coment
         fields = ['assunto', 'detalhe']
@@ -34,13 +35,15 @@ class ComentCreateForm(forms.ModelForm):
 
 # ##################################################################################################################################
 class TemaComentCreateForm(forms.ModelForm):
-    coment = forms.ModelMultipleChoiceField(queryset = Coment.objects.all(),)
+    #coment = forms.ModelMultipleChoiceField(queryset = Coment.objects.all(),)
+    coment = forms.ModelChoiceField(queryset=Coment.objects.all())
     class Meta:
         model = TemaComent
         fields = ['tema', 'coment']
 
 # ##################################################################################################################################
 class CiComentCreateForm(forms.ModelForm):
+    obs = forms.CharField(widget=forms.Textarea, required=False)
     coment = forms.ModelChoiceField(
         queryset=Coment.objects.all(),
         label='Comentário'
@@ -48,17 +51,18 @@ class CiComentCreateForm(forms.ModelForm):
 
     class Meta:
         model = CiComent
-        fields = ['coment', 'obs']   # ← tira 'ci'
+        fields = ['ci','coment', 'obs']   # ← tira 'ci'
 
 
 # ##################################################################################################################################
 class CiComentNovoForm(forms.Form):
     assunto = forms.CharField(max_length=75)
-    detalhe = forms.CharField(max_length=100, required=False)
-    obs = forms.CharField(max_length=100, required=False)
+    detalhe = forms.CharField(widget=forms.Textarea, required=False)
+    obs = forms.CharField(widget=forms.Textarea, required=False)
 
 # ##################################################################################################################################
 class CompComentCreateForm(forms.ModelForm):
+    obs = forms.CharField(widget=forms.Textarea, required=False)
     coment = forms.ModelChoiceField(
         queryset=Coment.objects.all(),
         label='Comentário'
@@ -66,11 +70,11 @@ class CompComentCreateForm(forms.ModelForm):
 
     class Meta:
         model = CompComent
-        fields = ['coment', 'obs']   # ← tira 'ci'
+        fields = ['comp','coment', 'obs']   # ← tira 'comp'
 
 
 # ##################################################################################################################################
 class CompComentNovoForm(forms.Form):
     assunto = forms.CharField(max_length=75)
-    detalhe = forms.CharField(max_length=100, required=False)
-    obs = forms.CharField(max_length=100, required=False)
+    detalhe = forms.CharField(widget=forms.Textarea, required=False)
+    obs = forms.CharField(widget=forms.Textarea, required=False)
