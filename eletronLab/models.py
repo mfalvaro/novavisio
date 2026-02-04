@@ -37,12 +37,12 @@ class Coment(models.Model):
 # ########################################################################################################################################################################################
 class Tema(models.Model):
     codtema = models.AutoField(db_column='Codtema', primary_key=True)  # Field name made lowercase.
-    semana = models.SmallIntegerField(db_column='Semana', blank=True, null=True)  # Field name made lowercase.
-    ordem = models.SmallIntegerField(db_column='Ordem', blank=True, null=True)  # Field name made lowercase.
-    categoria = models.CharField(db_column='Categoria', max_length=15, blank=True, null=True)  # Field name made lowercase.
-    titulo = models.CharField(db_column='Titulo', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    pagina = models.IntegerField(db_column='Pagina', blank=True, null=True)  # Field name made lowercase.
-    status = models.BooleanField(db_column='Status',blank=False, null=True, default=False)  # Field name made lowercase.
+    semana = models.SmallIntegerField(db_column='Semana', blank=True, null=True, help_text='Semana do fascículo')  # Field name made lowercase.
+    ordem = models.SmallIntegerField(db_column='Ordem', blank=True, null=True, help_text='Sequencia no fascículo')  # Field name made lowercase.
+    categoria = models.CharField(db_column='Categoria', max_length=15, blank=True, null=True, help_text='Uma categoria do lab')  # Field name made lowercase.
+    titulo = models.CharField(db_column='Titulo', max_length=255, blank=True, null=True, help_text='Título do tema')  # Field name made lowercase.
+    pagina = models.IntegerField(db_column='Pagina', blank=True, null=True, help_text='Sequencia de pgs por categoria')  # Field name made lowercase.
+    status = models.BooleanField(db_column='Status',blank=False, null=True, default=False, help_text='Tema estudado sim ou não?')  # Field name made lowercase.
 
     class Meta:
         #managed = False
@@ -83,7 +83,7 @@ class Ci(models.Model):
     codci = models.CharField(db_column='Codci', primary_key=True, max_length=15, blank=True, null=False, help_text='Nome do circuito integrado')
     semana = models.IntegerField(db_column='Semana', blank=True, null=True, help_text='Semana que apareceu pela primeira vez')
     sobre = models.CharField(db_column='Sobre', max_length=75, blank=True, null=True, help_text='Descrição do circuito integrado')
-    coment = models.ForeignKey(Coment, models.DO_NOTHING, db_column='Coment', blank=True, null=True)  # Field name made lowercase.
+    coment = models.ForeignKey(Coment, models.DO_NOTHING, db_column='Coment', blank=True, null=True, help_text='Coment único associado ao ci')  # Field name made lowercase.
 
     class Meta:
         #managed = False
@@ -102,7 +102,7 @@ class Ci(models.Model):
 class Comp(models.Model):
     codcomp = models.CharField(db_column='codcomp', primary_key=True, max_length=15, blank=True, null=False, help_text='Nome do componente')
     sobre = models.CharField(db_column='sobre', max_length=75, blank=True, null=True, help_text='Descrição do componente')
-    coment = models.ForeignKey(Coment, models.DO_NOTHING, db_column='coment_id', blank=True, null=True)  # Field name made lowercase.
+    coment = models.ForeignKey(Coment, models.DO_NOTHING, db_column='coment_id', blank=True, null=True, help_text='Coment único associado ao comp')  # Field name made lowercase.
 
     class Meta:
         #managed = False
@@ -123,7 +123,7 @@ class CiComent(models.Model):
     codci_coment = models.AutoField(db_column='codci_coment', primary_key=True)  # Field name made lowercase.
     ci = models.ForeignKey(Ci, models.DO_NOTHING, db_column='ci_id', blank=True, null=True)  # Field name made lowercase.
     coment = models.ForeignKey(Coment, models.DO_NOTHING, db_column='coment_id', blank=True, null=True)  # Field name made lowercase.
-    obs = models.CharField(db_column='obs', max_length=75, blank=True, null=True, help_text='Observação')
+    obs = models.CharField(db_column='obs', max_length=275, blank=True, null=True, help_text='Observação, pode ser um link')
     data = models.DateTimeField(db_column='data', blank=True, null=True, auto_now_add=True)  # Field name made lowercase.
 
     class Meta:
@@ -145,7 +145,7 @@ class CompComent(models.Model):
     codcomp_coment = models.AutoField(db_column='codcomp_coment', primary_key=True)  # Field name made lowercase.
     comp = models.ForeignKey(Comp, models.DO_NOTHING, db_column='comp_id', blank=True, null=True, help_text='Componente')  # Field name made lowercase.
     coment = models.ForeignKey(Coment, models.DO_NOTHING, db_column='coment_id', blank=True, null=True, help_text='Comentário')  # Field name made lowercase.
-    obs = models.CharField(db_column='obs', max_length=75, blank=True, null=True, help_text='Observação')
+    obs = models.CharField(db_column='obs', max_length=275, blank=True, null=True, help_text='Observação, pode ser um link')
     data = models.DateTimeField(db_column='data', blank=True, null=True, auto_now_add=True)  # Field name made lowercase.
 
     class Meta:
