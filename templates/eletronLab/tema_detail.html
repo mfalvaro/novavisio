@@ -23,6 +23,10 @@
 		<li>
 			<a href="{% url 'ci-detail' tc.coment.detalhe %}">{{ tc.coment.assunto }}</a> :: <a href="{{ tc.coment.get_absolute_url }}">{{ tc.coment.detalhe }}</a> ({{ tc.data|date:"j/n/y - G:i" }}) <a href="{{ tc.get_absolute_url }}/delete/?tema={{ tema.codtema }}">  <img src="{% static 'res/' %}delete.png"></a>
 		</li>
+		{% elif tc.coment.assunto == 'comp' %}
+		<li>
+			<a href="{% url 'comp-detail' tc.coment.detalhe %}">{{ tc.coment.assunto }}</a> :: <a href="{{ tc.coment.get_absolute_url }}">{{ tc.coment.detalhe }}</a> ({{ tc.data|date:"j/n/y - G:i" }}) <a href="{{ tc.get_absolute_url }}/delete/?tema={{ tema.codtema }}">  <img src="{% static 'res/' %}delete.png"></a>
+		</li>
 		{% elif tc.coment.assunto == 'projeto' %}
 		<li>
 			<a href="{{ tc.coment.get_absolute_url }}">{{ tc.coment.assunto }}</a> :: <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/projetos/{{ tc.coment.detalhe }}.jpg">{{ tc.coment.detalhe }}</a> ({{ tc.data|date:"j/n/y - G:i" }}) <a href="{{ tc.get_absolute_url }}/delete/?tema={{ tema.codtema }}">  <img src="{% static 'res/' %}delete.png"></a>

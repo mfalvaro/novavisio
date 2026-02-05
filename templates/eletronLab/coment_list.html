@@ -35,27 +35,31 @@
   <!-- Verifica se a lista está vazia -->
   {% if coment_list %}
 	<ul>
-    {% for c in coment_list %}
+		{% for c in coment_list %}
 		{% if c.assunto == 'outro tema' %}
-		  <li>
+		<li>
 			<a href="{{ c.get_absolute_url }}">{{ c.assunto }}</a> :: <a href="{% url 'outro_tema' %}?outrotema={{ c.detalhe }}">{{ c.detalhe }}</a>
-		  </li>	
+		</li>
 		{% elif c.assunto == 'ci' %}
-		  <li>
+		<li>
 			<a href="{% url 'ci-detail' c.detalhe %}">{{ c.assunto }}</a> :: <a href="{{ c.get_absolute_url }}">{{ c.detalhe }}</a>
-		  </li>			
+		</li>
+		{% elif c.assunto == 'comp' %}
+		<li>
+			<a href="{% url 'comp-detail' c.detalhe %}">{{ c.assunto }}</a> :: <a href="{{ c.get_absolute_url }}">{{ c.detalhe }}</a>
+		</li>
 		{% elif c.assunto == 'projeto' %}
-		  <li>
+		<li>
 			<a href="{{ c.get_absolute_url }}">{{ c.assunto }}</a> :: <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/projetos/{{ c.detalhe }}.jpg">{{ c.detalhe }}</a>
-		  </li>			
+		</li>
 		{% else %}
-		  <li>
+		<li>
 			<a href="{{ c.get_absolute_url }}">{{ c.assunto }}::{{ c.detalhe }}</a>
-		  </li>
-		{% endif %}	
-	
-    {% endfor %}
-   </ul>
+		</li>
+		{% endif %}
+
+		{% endfor %}
+	</ul>
   {% else %}
     <p>Não existem comentários no lab.</p>
   {% endif %}

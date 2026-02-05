@@ -70,6 +70,10 @@
 			  <li>
 				<a href="{% url 'ci-detail' c.detalhe %}">{{ c.assunto }}</a> :: <a href="{{ c.get_absolute_url }}">{{ c.detalhe }}</a>
 			  </li>			
+			{% elif c.assunto == 'comp' %}
+			  <li>
+				<a href="{% url 'comp-detail' c.detalhe %}">{{ c.assunto }}</a> :: <a href="{{ c.get_absolute_url }}">{{ c.detalhe }}</a>
+			  </li>			
 			{% elif c.assunto == 'projeto' %}
 			  <li>
 				<a href="{{ c.get_absolute_url }}">{{ c.assunto }}</a> :: <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/projetos/{{ c.detalhe }}.jpg">{{ c.detalhe }}</a>

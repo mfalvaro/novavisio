@@ -146,6 +146,7 @@
 			<a href="{{ cc.comp.get_absolute_url }}">
 				{{ cc.comp.codcomp }} - {{ cc.comp.sobre }}
 			</a>
+			<a href="{{ cc.get_absolute_url }}/delete/?comp={{ cc.comp.codcomp }}&from=coment">  <img src="{% static 'res/' %}delete.png"></a>
 
 		</li>
 		{% empty %}
