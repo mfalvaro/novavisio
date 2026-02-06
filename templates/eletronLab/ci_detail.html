@@ -7,7 +7,8 @@
 <!-- Add additional CSS, img in static files -->
 {% load static %}
 
-<p id="parag1">{{ ci.codci }} - {{ ci.sobre }}</p>
+<p id="parag1">ci: {{ ci.codci }}</p>
+<p>{{ ci.sobre }}</p>
 
 <p><a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/ci/ci_{{ ci.codci }}.jpg"><strong>Desenho/esquema do ci</strong></a> </p>
 
@@ -53,34 +54,34 @@
             <a href="{{ cc.coment.get_absolute_url }}">{{ cc.coment.assunto }}</a> ::
             <a href="{{ cc.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
             <a href="{% url 'outro_tema' %}?outrotema={{ cc.coment.detalhe }}">{{ cc.coment.detalhe }}</a> :::: {{ cc.obs }}  ({{ cc.data|date:"j/n/y - G:i" }})
-            <a href="{{ cc.get_absolute_url }}/delete/?ci={{ ci.codci }}">  <img src="{% static 'res/' %}delete.png"></a>
+            <a href="{% url 'cicoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
         </li>
         {% elif cc.coment.assunto == 'ci' %}
         <li>
             <a href="{% url 'ci-detail' cc.coment.detalhe %}">{{ cc.coment.assunto }}</a> ::
             <a href="{{ cc.coment.get_absolute_url }}">{{ cc.coment.detalhe }}</a> :::: {{ cc.obs }}   ({{ cc.data|date:"j/n/y - G:i" }})
             <a href="{{ cc.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
-            <a href="{{ cc.get_absolute_url }}/delete/?ci={{ ci.codci }}">  <img src="{% static 'res/' %}delete.png"></a>
+            <a href="{% url 'cicoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
         </li>
         {% elif cc.coment.assunto == 'projeto' %}
         <li>
             <a href="{{ cc.coment.get_absolute_url }}">{{ cc.coment.assunto }}</a> ::
             <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/projetos/{{ cc.coment.detalhe }}.jpg">{{ cc.coment.detalhe }}</a> :::: {{ cc.obs }}   ({{ cc.data|date:"j/n/y - G:i" }})
             <a href="{{ cc.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
-            <a href="{{ cc.get_absolute_url }}/delete/?ci={{ ci.codci }}">  <img src="{% static 'res/' %}delete.png"></a>
+            <a href="{% url 'cicoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
         </li>
         {% elif cc.coment.assunto == 'link' %}
         <li>
             <a href="{{ cc.coment.get_absolute_url }}">{{ cc.coment.assunto }}</a> ::
             <a href="{{ cc.obs }}">{{ cc.coment.detalhe }}</a> ::::  ({{ cc.data|date:"j/n/y - G:i" }})
             <a href="{{ cc.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
-            <a href="{{ cc.get_absolute_url }}/delete/?comp={{ ci.codcomp }}">  <img src="{% static 'res/' %}delete.png"></a>
+            <a href="{% url 'cicoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
         </li>
         {% else %}
         <li>
             <a href="{{ cc.coment.get_absolute_url }}">{{ cc.coment.assunto }} :: {{ cc.coment.detalhe }}</a> :::: {{ cc.obs }}   ({{ cc.data|date:"j/n/y - G:i" }})
             <a href="{{ cc.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
-            <a href="{{ cc.get_absolute_url }}/delete/?ci={{ ci.codci }}">  <img src="{% static 'res/' %}delete.png"></a>
+            <a href="{% url 'cicoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
         </li>
         {% endif %}
         {% empty %}

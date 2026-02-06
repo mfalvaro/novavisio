@@ -8,7 +8,7 @@
   {% load static %}
 
 <p>
-	<span id="parag1">Comentário</span>
+	<span id="parag1">Comentário:</span>
 	<span>&nbsp;&nbsp;&nbsp;</span>
 	<span id="parag2"><a href="{{ coment.get_absolute_url }}/update">Editar...</a></span>
 	<span>&nbsp;&nbsp;&nbsp;</span>
@@ -90,6 +90,7 @@
 			<a href="{{ cc.ci.get_absolute_url }}">
 				{{ cc.ci.codci }} - {{ cc.ci.sobre }}
 			</a>
+			<a href="{% url 'cicoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
 
 		</li>
 		{% empty %}
@@ -146,7 +147,9 @@
 			<a href="{{ cc.comp.get_absolute_url }}">
 				{{ cc.comp.codcomp }} - {{ cc.comp.sobre }}
 			</a>
-			<a href="{{ cc.get_absolute_url }}/delete/?comp={{ cc.comp.codcomp }}&from=coment">  <img src="{% static 'res/' %}delete.png"></a>
+			<a href="{% url 'compcoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
+
+
 
 		</li>
 		{% empty %}

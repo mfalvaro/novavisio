@@ -14,8 +14,9 @@
 
 <form method="post">
 	{% csrf_token %}
+	<input type="hidden" name="next" value="{{ next }}">
 	<button type="submit">Sim, remover associação</button>
-	<a href="{{ object.comp.get_absolute_url }}">Cancelar</a>
+	<a href="{{ next|default:'/' }}">Cancelar</a>
 </form>
 
 {% endblock %}
@@ -25,7 +26,6 @@
 <p>Faça o login para acessar o conteúdo.</p>
 	</br>
 {% endblock %}
-
 
 
 
