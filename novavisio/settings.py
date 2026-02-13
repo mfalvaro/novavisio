@@ -36,6 +36,7 @@ DEBUG = False #True False
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'gpsgeo.pythonanywhere.com']
 
 
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -136,6 +137,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # django_project/settings.py
 LOGIN_REDIRECT_URL = "home_eLab"
 LOGOUT_REDIRECT_URL = "home_eLab"  # new
+LOGIN_URL = "/accounts/login/"
+
 
 SESSION_COOKIE_SECURE = False
 

@@ -18,6 +18,9 @@ from django.urls import path, include
 #Add URL maps to redirect the base URL to our application
 from django.views.generic import RedirectView
 
+from eletronLab.views import LeitorSignupView
+
+
 # Use static() to add URL mapping to serve static files during development (only)
 from django.conf import settings
 from django.conf.urls.static import static
@@ -27,9 +30,12 @@ from . import views0
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("contas/", include("django.contrib.auth.urls")),  # new]
+    path("accounts/", include("django.contrib.auth.urls")),  # new]
     path('eletronLab/', include('eletronLab.urls')),
     path('', views0.home, name="home"),
+
+    path("accounts/signup/", LeitorSignupView.as_view(), name="signup"),
+
 
 ]
 

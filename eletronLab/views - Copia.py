@@ -17,12 +17,7 @@ from django.db.models import Count
 from django.views import generic
 
 from novavisio import settings
-
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.models import Group
-from django.contrib.auth import login
-from django.core.exceptions import PermissionDenied
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 import locale
 
@@ -39,7 +34,6 @@ from eletronLab.forms import CiComentCreateForm
 from eletronLab.forms import CiComentNovoForm
 from eletronLab.forms import CompComentCreateForm
 from eletronLab.forms import CompComentNovoForm
-from eletronLab.forms import LeitorSignupForm
 
 from django.views import View
 from django.http import HttpResponse
@@ -51,14 +45,8 @@ from django.core.cache import cache
 from django import forms
 
 
-#from django.views.generic import CreateView
-
-
-
 ##-----------------------------GLOBALS--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 paginacao=15
-class AdminRequiredMixin(PermissionRequiredMixin):
-    raise_exception = True  # devolve 403 (não redireciona pro login)
 
 ##--------------------FUNCTIONS AND CLASSES---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ##    home_eLab PAGE **********************************************************************************************************************************************************************    HOME PAGE
@@ -69,9 +57,9 @@ def home_eLab(request):
     if 'mysql.uhserver.com' in a:
         db_server='UOL Host'
     if 'localhost' in a:
-        db_server='Local Host'
+        db_server='localhost'
     if 'pythonanywhere-services.com' in a:
-        db_server='Python Anywhere Host'
+        db_server='PA Host'
     db_db=settings.DATABASES['default']['NAME']
 
     """View function for home page of site."""
@@ -116,7 +104,7 @@ def home_eLab(request):
 
 ##    TEMA ***************************************************************************************************************************************************************************    TEMA
 #  LISTA VISUALIZAÇÃO  #################################################################################################################  LISTA VISUALIZAÇÃO
-class TemaListViewSorted(LoginRequiredMixin, generic.ListView):
+class TemaListViewSorted(generic.ListView):
     model = Tema
     template_name = 'eletronLab/tema_list.html'
 
@@ -233,14 +221,13 @@ class TemaListViewSorted(LoginRequiredMixin, generic.ListView):
 
 
 #  INDIVIDUAL VISUALIZAÇÃO ############################################################################################################   INDIVIDUAL VISUALIZAÇÃO
-class TemaDetailView(LoginRequiredMixin, generic.DetailView):
+class TemaDetailView(generic.DetailView):
     template_name = 'eletronLab/tema_detail.html'  # Specify your own template name/location
     model = Tema
 
 
 #  INDIVIDUAL UPDATE ###################################################################################################################   INDIVIDUAL UPDATE
-class TemaUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
-    permission_required = "eletronLab.change_tema"
+class TemaUpdate(UpdateView):
     model = Tema
     fields = ['semana', 'ordem', 'titulo', 'categoria', 'pagina', 'status']
 
@@ -248,7 +235,7 @@ class TemaUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
 ##    COMENT *************************************************************************************************************************************************************************    COMENT
 #  LISTA VISUALIZAÇÃO  ################################################################################################################          LISTA VISUALIZAÇÃO
 @method_decorator(never_cache, name='dispatch')
-class ComentListView(LoginRequiredMixin, generic.ListView):
+class ComentListView(generic.ListView):
     model = Coment
     template_name = 'eletronLab/coment_list.html'
     paginate_by = paginacao
@@ -335,8 +322,7 @@ class ComentDetailView(generic.DetailView):
         return ctx
 
 #  INDIVIDUAL CREATE ###################################################################################################################          INDIVIDUAL CREATE
-class ComentCreate(LoginRequiredMixin, AdminRequiredMixin, CreateView):
-    permission_required = "eletronLab.add_coment"
+class ComentCreate(CreateView):
     def get(self, request, *args, **kwargs):
         context = {'form': ComentCreateForm()}
         return render(request, 'eletronLab/coment_form.html', context)
@@ -373,8 +359,7 @@ class ComentCreate(LoginRequiredMixin, AdminRequiredMixin, CreateView):
         return render(request, 'eletronLab/coment_form.html', {'form': form})
 
 # INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
-class ComentUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
-    permission_required = "eletronLab.change_coment"
+class ComentUpdate(UpdateView):
     model = Coment
     fields = ['assunto', 'detalhe']
 
@@ -385,21 +370,18 @@ class ComentUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
 
 
 # INDIVIDUAL DELETE ####################################################################################################################          INDIVIDUAL DELETE
-class ComentDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
-    permission_required = "eletronLab.delete_coment"
+class ComentDelete(DeleteView):
     model = Coment
     success_url = reverse_lazy('coments')
 
 
 ##    TEMACOMENT *********************************************************************************************************************************************************************    TEMACOMENT
 #  INDIVIDUAL VISUALIZAÇÃO ##########################################################################################################  INDIVIDUAL VISUALIZAÇÃO
-class TemaComentDetailView(LoginRequiredMixin, generic.DetailView):
+class TemaComentDetailView(generic.DetailView):
     model = TemaComent
     template_name = 'eletronLab/temacoment_detail.html'  # Specify your own template name/location
 
 #  INDIVIDUAL CREATE MULTIPLE ################################################################################################################        INDIVIDUAL CREATE MULTIPLE
-@login_required
-@permission_required("eletronLab.add_temacoment", raise_exception=True)
 def TemaComentCreate(request):
     # vindo do tema-detail
     tmpTema = request.GET.get('tema', '')
@@ -451,8 +433,7 @@ def TemaComentCreate(request):
 
 
 #  INDIVIDUAL DELETE ################################################################################################################        INDIVIDUAL DELETE
-class TemaComentDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
-    permission_required = "eletronLab.delete_temacoment"
+class TemaComentDelete(DeleteView):
     model = TemaComent
 
     # fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff----get_success_url
@@ -463,7 +444,6 @@ class TemaComentDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
             return reverse_lazy('tema-detail', kwargs={'pk': self.request.GET.get('tema',1)})
 
 ##    OUTRO TEMA **********************************************************************************************************************************************************************    OUTRO TEMA
-@login_required
 def OutroTema(request):
 
     # Captura do parâmetro outrotema da URL onde está a categoria do tema e sua respectiva página separadas por um espaço em branco
@@ -491,7 +471,7 @@ def OutroTema(request):
     return redirect(tmptema[0])
 
 #  LISTA VISUALIZAÇÃO  ##############################################################################################################      LISTA VISUALIZAÇÃO
-class SearchListView(LoginRequiredMixin, generic.ListView):
+class SearchListView(generic.ListView):
     template_name = 'eletronLab/search_list.html'  # Specify your own template name/location
 
     #SISTEMA DE PAGINAÇÃO**********************************************************
@@ -598,7 +578,7 @@ def CiListView(request):
     return render(request, 'eletronLab/ci_list.html', context=context)
 
 #  INDIVIDUAL VISUALIZAÇÃO ############################################################################################################     INDIVIDUAL VISUALIZAÇÃO
-class CiDetailView(LoginRequiredMixin, generic.DetailView):
+class CiDetailView(generic.DetailView):
     model = Ci
     template_name = 'eletronLab/ci_detail.html'
     context_object_name = 'ci'
@@ -621,21 +601,18 @@ class CiDetailView(LoginRequiredMixin, generic.DetailView):
         return ctx
 
 #  INDIVIDUAL CREATE ################################################################################################################        INDIVIDUAL CREATE
-class CiCreate(LoginRequiredMixin, AdminRequiredMixin, CreateView):
-    permission_required = "eletronLab.add_ci"
+class CiCreate(CreateView):
     model = Ci
     fields = ['codci', 'semana', 'sobre','coment']
     success_url = reverse_lazy('cis')
 
 # INDIVIDUAL DELETE ####################################################################################################################          INDIVIDUAL DELETE
-class CiDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
-    permission_required = "eletronLab.delete_ci"
+class CiDelete(DeleteView):
     model = Ci
     success_url = reverse_lazy('cis')
 
 # INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
-class CiUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
-    permission_required = "eletronLab.change_ci"
+class CiUpdate(UpdateView):
     model = Ci
     fields = ['codci', 'semana', 'sobre','coment']
     success_url = reverse_lazy('cis')
@@ -644,7 +621,7 @@ class CiUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
 
 ##    CI COMENT ***********************************************************************************************************************************************************    CI COMENT
 #  INDIVIDUAL VISUALIZAÇÃO ##########################################################################################################  INDIVIDUAL VISUALIZAÇÃO
-class CiComentDetailView(LoginRequiredMixin, generic.DetailView):
+class CiComentDetailView(generic.DetailView):
     model = CiComent
     template_name = 'eletronLab/cicoment_detail.html'  # Specify your own template name/location
 
@@ -666,8 +643,7 @@ class CiComentUpdate(UpdateView):
         )
 
 #  INDIVIDUAL DELETE ################################################################################################################        INDIVIDUAL DELETE
-class CiComentDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
-    permission_required = "eletronLab.delete_cicoment"
+class CiComentDelete(DeleteView):
     model = CiComent
     template_name = 'eletronLab/cicoment_confirm_delete.html'
     success_url = reverse_lazy('home')  # fallback
@@ -682,8 +658,6 @@ class CiComentDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
 
 
 #  INDIVIDUAL CREATE  ################################################################################################################        INDIVIDUAL CREATE
-@login_required
-@permission_required("eletronLab.add_cicoment", raise_exception=True)
 def CiComentCreate(request):
     tmpCi = request.GET.get('ci', '')           # vindo do ci-detail
     tmpComent = request.GET.get('coment', '')   # vindo do coment-detail
@@ -761,8 +735,6 @@ def CiComentCreate(request):
 
 
 #  INDIVIDUAL CREATE  ALTERNATIVO ################################################################################################################        INDIVIDUAL CREATE ALTERNATIVO
-@login_required
-@permission_required("eletronLab.add_cicoment", raise_exception=True)
 def CiComentNovoCreate(request):
     codci = request.GET.get('ci')
     ci_obj = get_object_or_404(Ci, pk=codci)
@@ -806,7 +778,7 @@ def CompListView(request):
     return render(request, 'eletronLab/comp_list.html', context=context)
 
 #  INDIVIDUAL VISUALIZAÇÃO ############################################################################################################     INDIVIDUAL VISUALIZAÇÃO
-class CompDetailView(LoginRequiredMixin, generic.DetailView):
+class CompDetailView(generic.DetailView):
     model = Comp
     template_name = 'eletronLab/comp_detail.html'
     context_object_name = 'comp'
@@ -829,21 +801,18 @@ class CompDetailView(LoginRequiredMixin, generic.DetailView):
         return ctx
 
 #  INDIVIDUAL CREATE ################################################################################################################        INDIVIDUAL CREATE
-class CompCreate(LoginRequiredMixin, AdminRequiredMixin, CreateView):
-    permission_required = "eletronLab.add_comp"
+class CompCreate(CreateView):
     model = Comp
     fields = ['codcomp', 'sobre', 'coment']
     success_url = reverse_lazy('comps')
 
 # INDIVIDUAL DELETE ####################################################################################################################          INDIVIDUAL DELETE
-class CompDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
-    permission_required = "eletronLab.delete_comp"
+class CompDelete(DeleteView):
     model = Comp
     success_url = reverse_lazy('comps')
 
 # INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
-class CompUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
-    permission_required = "eletronLab.change_comp"
+class CompUpdate(UpdateView):
     model = Comp
     fields = ['codcomp', 'sobre', 'coment']
     success_url = reverse_lazy('comps')
@@ -857,7 +826,7 @@ class CompUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
 
 ##    COMP COMENT ***********************************************************************************************************************************************************    COMP COMENT
 #  INDIVIDUAL VISUALIZAÇÃO ##########################################################################################################  INDIVIDUAL VISUALIZAÇÃO
-class CompComentDetailView(LoginRequiredMixin, generic.DetailView):
+class CompComentDetailView(generic.DetailView):
     model = CompComent
     template_name = 'eletronLab/compcoment_detail.html'  # Specify your own template name/location
 
@@ -879,8 +848,7 @@ class CompComentUpdate(UpdateView):
         )
 
 #  INDIVIDUAL DELETE ################################################################################################################        INDIVIDUAL DELETE
-class CompComentDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
-    permission_required = "eletronLab.delete_compcoment"
+class CompComentDelete(DeleteView):
     model = CompComent
     template_name = 'eletronLab/compcoment_confirm_delete.html'
     success_url = reverse_lazy('home')  # fallback
@@ -895,8 +863,6 @@ class CompComentDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
 
 
 #  INDIVIDUAL CREATE  ################################################################################################################        INDIVIDUAL CREATE
-@login_required
-@permission_required("eletronLab.add_compcoment", raise_exception=True)
 def CompComentCreate(request):
     codcomp = request.GET.get('comp', '')        # vindo do comp-detail
     tmpComent = request.GET.get('coment', '')    # vindo do coment-detail
@@ -968,8 +934,6 @@ def CompComentCreate(request):
 
 
 #  INDIVIDUAL CREATE  ALTERNATIVO ################################################################################################################        INDIVIDUAL CREATE ALTERNATIVO
-@login_required
-@permission_required("eletronLab.add_compcoment", raise_exception=True)
 def CompComentNovoCreate(request):
     codcomp = request.GET.get('comp')
     comp_obj = get_object_or_404(Comp, pk=codcomp)
@@ -998,14 +962,3 @@ def CompComentNovoCreate(request):
     return redirect(reverse_lazy('comp-detail', kwargs={'pk': comp_obj.pk}))
 
 
-class LeitorSignupView(CreateView):
-    form_class = LeitorSignupForm
-    template_name = "registration/signup.html"
-    success_url = reverse_lazy("home_eLab")  # ajuste para sua home real
-
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        grupo, _ = Group.objects.get_or_create(name="Leitor")
-        self.object.groups.add(grupo)
-        login(self.request, self.object)  # opcional: auto-login
-        return response

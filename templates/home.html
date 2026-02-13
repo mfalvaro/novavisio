@@ -6,15 +6,26 @@
 {% load static %}
 
 {% block sidebar %}
-	<br>
-	<ul class="sidebar-nav">
-		<li><a href="{% url 'home' %}">Home</a></li>
-		<li><a href="{% url 'home_eLab' %}">Laboratório de Eletrônica</a></li>
-	</ul>
+<br>
+<ul class="sidebar-nav">
+	<li><a href="{% url 'home' %}">Home</a></li>
+	<li><a href="{% url 'home_eLab' %}">Laboratório de Eletrônica</a></li>
+</ul>
 {% endblock %}
 
 
 {% block content %}
+<br />
+<br />
+<img src="{% static 'res/' %}monte_seu_lab.jpg" width="450" height="145">
+<br />
+<br />
+<br />
+<p>A série de 52 fascículos chamada "Monte o seu Laboratório de Eletrônica", esteve disponível semanalmente nas bancas de jornais em 2010.</p>
+<p>Cada fascículo trazia peças para a montagem do laboratório, além de componentes básicos e circuitos integrados clássicos, utilizados em diversos montagens experimentais.</p>
+<p>A cada semana eram apresentandos oito novos temas, um sobre "Teoria", outro sobre "O laboratório" e mais seis montagens de circuitos experimentais das mais diversas funcionalidads.</p>
+<p>Aqui você poderá encontrar cada um dos temas originais scaneados, com comentários.</p>
+<p>Além de informações sobre os ci´s utilizados em cada montagem e outros componentes eletrônicos básicos.</p>
 {% endblock %}
 
 {% block content1 %}

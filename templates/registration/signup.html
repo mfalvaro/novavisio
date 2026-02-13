@@ -4,14 +4,14 @@
 {% block title %}eLab Login{% endblock %}
 
 {% block content1 %}
-	<h2>Log In</h2>
+	<h1>Criar conta</h1>
 	<form method="post">
-	  {% csrf_token %}
-	  {{ form.as_p }}
-	  <button type="submit">Log In</button>
+		{% csrf_token %}
+		{{ form.as_p }}
+		<button type="submit">Cadastrar</button>
 	</form>
     </br>
-	<p>Não tem conta? <a href="{% url 'signup' %}">Criar conta</a></p>
+	<p>Já tem conta? <a href="{% url 'login' %}">Entrar</a></p>
 	<p>Voltar para <a href="{% url 'home_eLab' %}">Home</a></p>
 
 {% endblock %}

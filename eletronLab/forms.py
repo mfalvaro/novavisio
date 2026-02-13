@@ -9,7 +9,9 @@
 from django import forms
 from eletronLab.models import Coment, CiComent, CompComent
 from eletronLab.models import TemaComent
-#from django.core.exceptions import ValidationError
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+
 
 ##--------------------FUNCTIONS AND CLASSES-------------------------------------
 # ##################################################################################################################################
@@ -78,3 +80,10 @@ class CompComentNovoForm(forms.Form):
     assunto = forms.CharField(max_length=75)
     detalhe = forms.CharField(widget=forms.Textarea, required=False)
     obs = forms.CharField(widget=forms.Textarea, required=False)
+
+class LeitorSignupForm(UserCreationForm):
+    email = forms.EmailField(required=False)
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "password1", "password2")

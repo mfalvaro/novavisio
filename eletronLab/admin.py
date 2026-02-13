@@ -6,7 +6,7 @@
 from django.contrib import admin
 
 #importa os modelos deste APP
-from .models import Coment, Tema, TemaComent
+from .models import Coment, Tema, TemaComent, Ci, Comp, CiComent, CompComent
 
 #importa a função built-in F
 from django.db.models import F
