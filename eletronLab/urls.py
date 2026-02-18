@@ -46,4 +46,12 @@ urlpatterns = [
 
     path('searchs/', views.SearchListView.as_view(), name='searchs'),
 
+
+    path("coment/com-infos/", views.ComentComInfosListView.as_view(), name="coment-com-infos"),
+    path("coment/<int:codcoment>/infos/", views.ComentInfoByComentListView.as_view(), name="comentinfo-by-coment"),
+    path("comentinfo/novo/", views.ComentInfoCreate.as_view(), name="comentinfo-create"),
+    path("comentinfo/<int:pk>/editar/", views.ComentInfoUpdate.as_view(), name="comentinfo-update"),
+    path("comentinfo/<int:pk>/excluir/", views.ComentInfoDelete.as_view(), name="comentinfo-delete"),
+
+
     ]

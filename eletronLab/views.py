@@ -12,7 +12,7 @@
 ##-----------------------------IMPORTS--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 from django.shortcuts import render, redirect, get_object_or_404
 
-from .models import Coment, Tema, TemaComent, Ci, Comp, CiComent, CompComent
+from .models import Coment, Tema, TemaComent, Ci, Comp, CiComent, CompComent, ComentInfo
 from django.db.models import Count
 from django.views import generic
 
@@ -23,6 +23,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import Group
 from django.contrib.auth import login
 from django.core.exceptions import PermissionDenied
+#from .mixins import AdminRequiredMixin  # (do jeito que você já usa)
 
 import locale
 
@@ -40,6 +41,7 @@ from eletronLab.forms import CiComentNovoForm
 from eletronLab.forms import CompComentCreateForm
 from eletronLab.forms import CompComentNovoForm
 from eletronLab.forms import LeitorSignupForm
+from eletronLab.forms import ComentInfoForm
 
 from django.views import View
 from django.http import HttpResponse
@@ -68,8 +70,8 @@ def home_eLab(request):
     a=settings.DATABASES['default']['HOST']
     if 'mysql.uhserver.com' in a:
         db_server='UOL Host'
-    if 'localhost' in a:
-        db_server='Local Host'
+    if '127.0.0.1' in a:
+        db_server= r'Local Host (C:\xampp\mysql\data\)'
     if 'pythonanywhere-services.com' in a:
         db_server='Python Anywhere Host'
     db_db=settings.DATABASES['default']['NAME']
@@ -331,6 +333,13 @@ class ComentDetailView(generic.DetailView):
         qs_comps = CompComent.objects.filter(coment=self.object).select_related('comp')
         paginator_comps = Paginator(qs_comps, 3)
         ctx['comps_page'] = paginator_comps.get_page(self.request.GET.get('cnpage'))
+
+
+        # 4) INFOS complementares associados ao coment (coment_info)
+        qs_infos = ComentInfo.objects.filter(coment=self.object).order_by("codinfo")
+        paginator_infos = Paginator(qs_infos, 3)
+        ctx['infos_page'] = paginator_infos.get_page(self.request.GET.get('ipage'))
+
 
         return ctx
 
@@ -998,6 +1007,7 @@ def CompComentNovoCreate(request):
     return redirect(reverse_lazy('comp-detail', kwargs={'pk': comp_obj.pk}))
 
 
+#  ##########################################################################################################
 class LeitorSignupView(CreateView):
     form_class = LeitorSignupForm
     template_name = "registration/signup.html"
@@ -1009,3 +1019,77 @@ class LeitorSignupView(CreateView):
         self.object.groups.add(grupo)
         login(self.request, self.object)  # opcional: auto-login
         return response
+
+
+##    COMEMT INFO ***********************************************************************************************************************************************************    COMEMT INFO
+#  LISTA VISUALIZAÇÃO  ################################################################################################################          LISTA VISUALIZAÇÃO
+class ComentInfoByComentListView(LoginRequiredMixin, generic.ListView):
+    model = ComentInfo
+    template_name = 'eletronLab/comentinfo_list.html'
+    paginate_by = paginacao
+
+    def get_queryset(self):
+        self.coment = get_object_or_404(Coment, codcoment=self.kwargs["codcoment"])
+        return ComentInfo.objects.filter(coment=self.coment).order_by("codinfo")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["coment"] = self.coment
+        return ctx
+
+
+#  INDIVIDUAL CREATE ################################################################################################################        INDIVIDUAL CREATE
+class ComentInfoCreate(LoginRequiredMixin, AdminRequiredMixin, CreateView):
+    permission_required = "eletronLab.add_comentinfo"
+
+    def get(self, request, *args, **kwargs):
+        initial = {}
+        codcoment = request.GET.get("codcoment", "")
+        if codcoment:
+            initial["coment"] = get_object_or_404(Coment, codcoment=int(codcoment))
+        context = {"form": ComentInfoForm(initial=initial)}
+        return render(request, "eletronLab/comentinfo_form.html", context)
+
+    def post(self, request, *args, **kwargs):
+        form = ComentInfoForm(request.POST)
+        if form.is_valid():
+            obj = form.save()
+            # volta para o detalhe do comentário
+            return redirect(reverse_lazy("coment-detail", kwargs={"pk": obj.coment.codcoment}))
+        return render(request, "eletronLab/comentinfo_form.html", {"form": form})
+
+
+# INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
+class ComentInfoUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
+    permission_required = "eletronLab.change_comentinfo"
+    model = ComentInfo
+    form_class = ComentInfoForm
+    template_name = "eletronLab/comentinfo_form.html"
+
+    def get_success_url(self):
+        return reverse_lazy("coment-detail", kwargs={"pk": self.object.coment.codcoment})
+
+
+#  INDIVIDUAL DELETE ################################################################################################################        INDIVIDUAL DELETE
+class ComentInfoDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
+    permission_required = "eletronLab.delete_comentinfo"
+    model = ComentInfo
+    template_name = "eletronLab/comentinfo_confirm_delete.html"
+
+    def get_success_url(self):
+        return reverse_lazy("coment-detail", kwargs={"pk": self.object.coment.codcoment})
+
+#  ################################################################################################################
+@method_decorator(never_cache, name='dispatch')
+class ComentComInfosListView(LoginRequiredMixin, generic.ListView):
+    model = Coment
+    template_name = "eletronLab/coment_com_infos_list.html"
+    paginate_by = paginacao
+
+    def get_queryset(self):
+        return (
+            Coment.objects
+                 .filter(infos__isnull=False)
+                 .distinct()
+                 .order_by("assunto", "detalhe")
+        )

@@ -1,0 +1,24 @@
+<!-- templates/estudoa/temacoment_form.html-->
+{% extends 'eletronLab/home_eLab.html' %}
+
+{% block content %}
+<h1>{% if object %}Editar{% else %}Nova{% endif %} Info</h1>
+	</br>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Salvar</button>
+</form>
+{% endblock %}
+
+{% block content1 %}
+	</br>
+<p>Faça o login para acessar o conteúdo.</p>
+	</br>
+{% endblock %}
+
+
+
+
+

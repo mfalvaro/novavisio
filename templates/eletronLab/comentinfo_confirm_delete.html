@@ -1,0 +1,23 @@
+<!-- templates/estudoa/ci_confirm_delete.html-->
+{% extends 'eletronLab/home_eLab.html' %}
+
+{% block content %}
+
+<h4>Excluir info</h4>
+
+<p>Tem certeza que deseja apagar esta info:<span style="color: red;"> {{ comp }}</span>?</p>
+
+<form method="post">
+	{% csrf_token %}
+	<button type="submit">Sim, excluir</button>
+	<a href="{% url 'coment-detail' pk=object.coment.codcoment %}">Cancelar</a>
+</form>
+
+{% endblock %}
+
+{% block content1 %}
+	</br>
+<p>Faça o login para acessar o conteúdo.</p>
+	</br>
+{% endblock %}
+

@@ -13,6 +13,13 @@ from django.db import models
 # Used to generate URLs by reversing the URL patterns
 from django.urls import reverse
 
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
+
+
+
+
+
 ##----------------------CLASSES AND FUNCTIONS ----------------------------------
 # ########################################################################################################################################################################################
 class Coment(models.Model):
@@ -161,3 +168,51 @@ class CompComent(models.Model):
     def get_absolute_url(self):
         """Returns the url to access a detail record for this book."""
         return reverse('compcoment-detail', args=[str(self.codcomp_coment)])
+
+
+# ########################################################################################################################################################################################
+class ComentInfo(models.Model):
+    codinfo = models.AutoField(db_column='Codinfo', primary_key=True)
+
+    coment = models.ForeignKey(
+        Coment,
+        on_delete=models.CASCADE,
+        db_column='Coment',
+        related_name='infos',
+        null=False,
+        blank=False,
+    )
+
+    titulo = models.CharField(
+        db_column='Titulo',
+        max_length=150,
+        blank=True,
+        null=True,
+        help_text='Título curto (bom para renderizar links).'
+    )
+
+    info = models.TextField(
+        db_column='Info',
+        null=False,
+        blank=False,
+        help_text='Texto longo ou URL.'
+    )
+
+    class Meta:
+        db_table = 'coment_info'
+        ordering = ['codinfo']
+
+    @property
+    def is_link(self) -> bool:
+        val = (self.info or "").strip()
+        if not val:
+            return False
+        v = URLValidator(schemes=["http", "https"])
+        try:
+            v(val)
+            return True
+        except ValidationError:
+            return False
+
+    def __str__(self):
+        return f'{self.coment.assunto} :: {self.titulo or self.info[:50]}'

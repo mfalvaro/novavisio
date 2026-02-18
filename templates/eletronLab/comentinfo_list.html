@@ -1,0 +1,85 @@
+<!-- templates/eletronLab/ci_home.html-->
+{% extends 'eletronLab/home_eLab.html' %}
+
+{% block title %}eLab Circuitos integrados{% endblock %}
+<!-- Add additional CSS, img in static files -->
+{% load static %}
+
+{% block content %}
+<p>
+	<span id="parag1">Infos complementares</span>
+	<span><strong>{{ coment.assunto }} :: {{ coment.detalhe }}</strong></span>
+	<span>&nbsp;&nbsp;&nbsp;</span>
+	<span id="parag2"><a href="{% url 'comentinfo-create' %}?codcoment={{ coment.codcoment }}">Adicionar info...</a></span>
+
+</p>
+
+
+<ul>
+	{% for i in object_list %}
+	<li>
+		{% if i.is_link %}
+		<a href="{{ i.info }}" target="_blank">{{ i.titulo|default:i.info }}</a>
+		{% else %}
+		<strong>{{ i.titulo|default:"(sem título)" }}</strong><br>
+		{{ i.info|linebreaksbr }}
+		{% endif %}
+		<br>
+		[<a href="{% url 'comentinfo-update' i.pk %}">editar</a>]
+		[<a href="{% url 'comentinfo-delete' i.pk %}">excluir</a>]
+	</li>
+	{% empty %}
+	<li>Nenhuma info cadastrada.</li>
+	{% endfor %}
+</ul>
+</br>
+
+{% if is_paginated %}
+  {% if page_obj.has_previous %}
+<a href="?page={{ page_obj.previous_page_number }}">anterior</a>
+  {% endif %}
+<span> {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} </span>
+  {% if page_obj.has_next %}
+<a href="?page={{ page_obj.next_page_number }}">próxima</a>
+  {% endif %}
+{% endif %}
+
+
+
+
+{% endblock %}
+
+
+{% block content1 %}
+<p id="parag1">Infos complementares</p>
+<ul>
+	{% for i in object_list %}
+	<li>
+		{% if i.is_link %}
+		<a href="{{ i.info }}" target="_blank">{{ i.titulo|default:i.info }}</a>
+		{% else %}
+		<strong>{{ i.titulo|default:"(sem título)" }}</strong><br>
+		{{ i.info|linebreaksbr }}
+		{% endif %}
+		<br>
+	</li>
+	{% empty %}
+	<li>Nenhuma info cadastrada.</li>
+	{% endfor %}
+</ul>
+</br>
+{% if is_paginated %}
+  {% if page_obj.has_previous %}
+<a href="?page={{ page_obj.previous_page_number }}">anterior</a>
+  {% endif %}
+<span> {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} </span>
+  {% if page_obj.has_next %}
+<a href="?page={{ page_obj.next_page_number }}">próxima</a>
+  {% endif %}
+{% endif %}
+
+{% endblock %}
+
+
+
+

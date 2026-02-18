@@ -80,7 +80,6 @@ WSGI_APPLICATION = 'novavisio.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 #database local xampp em C:\xampp\mysql\data
 ##DATABASES = {
 ##    "default": {
