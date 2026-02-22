@@ -18,8 +18,6 @@ from django.core.exceptions import ValidationError
 
 
 
-
-
 ##----------------------CLASSES AND FUNCTIONS ----------------------------------
 # ########################################################################################################################################################################################
 class Coment(models.Model):
@@ -43,25 +41,44 @@ class Coment(models.Model):
 
 # ########################################################################################################################################################################################
 class Tema(models.Model):
-    codtema = models.AutoField(db_column='Codtema', primary_key=True)  # Field name made lowercase.
-    semana = models.SmallIntegerField(db_column='Semana', blank=True, null=True, help_text='Semana do fascículo')  # Field name made lowercase.
-    ordem = models.SmallIntegerField(db_column='Ordem', blank=True, null=True, help_text='Sequencia no fascículo')  # Field name made lowercase.
-    categoria = models.CharField(db_column='Categoria', max_length=15, blank=True, null=True, help_text='Uma categoria do lab')  # Field name made lowercase.
-    titulo = models.CharField(db_column='Titulo', max_length=255, blank=True, null=True, help_text='Título do tema')  # Field name made lowercase.
-    pagina = models.IntegerField(db_column='Pagina', blank=True, null=True, help_text='Sequencia de pgs por categoria')  # Field name made lowercase.
-    status = models.BooleanField(db_column='Status',blank=False, null=True, default=False, help_text='Tema estudado sim ou não?')  # Field name made lowercase.
+    codtema = models.AutoField(db_column='Codtema', primary_key=True)
+    semana = models.SmallIntegerField(db_column='Semana', blank=True, null=True, help_text='Semana do fascículo')
+    ordem = models.SmallIntegerField(db_column='Ordem', blank=True, null=True, help_text='Sequencia no fascículo')
+    categoria = models.CharField(db_column='Categoria', max_length=15, blank=True, null=True, help_text='Uma categoria do lab')
+    titulo = models.CharField(db_column='Titulo', max_length=255, blank=True, null=True, help_text='Título do tema')
+    pagina = models.IntegerField(db_column='Pagina', blank=True, null=True, help_text='Sequencia de pgs por categoria')
+
+
+    # Campo novo (temporário)
+    STATUS_REVISADO = "revisado"
+    STATUS_ESTUDADO = "estudado"
+    STATUS_NENHUM   = "nenhum"
+
+    STATUS_CHOICES = [
+        (STATUS_REVISADO, "Revisado"),
+        (STATUS_ESTUDADO, "Estudado"),
+        (STATUS_NENHUM,   "Nenhum"),
+    ]
+
+    status = models.CharField(
+        db_column='Status',
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default=STATUS_NENHUM,
+        null=False,
+        blank=False,
+        db_index=True,
+        help_text='Status do tema (texto)',
+    )
 
     class Meta:
-        #managed = False
         db_table = 'tema'
         ordering = ['semana', 'ordem']
 
     def __str__(self):
-        """String for representing the Model object."""
         return f'{self.semana}.{self.ordem} {self.titulo} ({self.categoria} {self.pagina})'
 
     def get_absolute_url(self):
-        """Returns the url to access a detail record for this book."""
         return reverse('tema-detail', args=[str(self.codtema)])
 
 # ########################################################################################################################################################################################

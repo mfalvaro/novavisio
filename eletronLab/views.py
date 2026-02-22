@@ -13,7 +13,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 
 from .models import Coment, Tema, TemaComent, Ci, Comp, CiComent, CompComent, ComentInfo
-from django.db.models import Count
+from django.db.models import Count, Case, When, Value, IntegerField
 from django.views import generic
 
 from novavisio import settings
@@ -56,7 +56,6 @@ from django import forms
 #from django.views.generic import CreateView
 
 
-
 ##-----------------------------GLOBALS--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 paginacao=15
 class AdminRequiredMixin(PermissionRequiredMixin):
@@ -87,14 +86,16 @@ def home_eLab(request):
     num_temas = Tema.objects.all().count()
     num_coments = Coment.objects.all().count()
 
-    # temas ja estudados (todos - aqueles cujo campo ordem = NULL
-    num_temas_estudados = Tema.objects.filter(status__exact=True).count()
+    # temas ja estudados (todos - aqueles cujo campo status = estudado
+    num_temas_estudados = Tema.objects.filter(status="estudado").count()
+    percentual_temas_estudados = "{0:,.1f}%".format((num_temas_estudados/num_temas)*100) if num_temas else "0,0%"
+    # temas ja revisados (todos - aqueles cujo campo status = revisado
+    num_temas_revisados = Tema.objects.filter(status="revisado").count()
+    percentual_temas_revisados = "{0:,.1f}%".format((num_temas_revisados/num_temas)*100) if num_temas else "0,0%"    # The 'all()' is implied by default.
 
-    # The 'all()' is implied by default.
     tmp1=Coment.objects.aggregate(Count('assunto', distinct=True))
     num_assuntos = tmp1['assunto__count']
 
-    percentual_temas_estudados = "{0:,.1f}%".format((num_temas_estudados/num_temas)*100)
 
     num_cis = Ci.objects.all().count()
 
@@ -103,9 +104,11 @@ def home_eLab(request):
     context = {
         'num_temas': num_temas,
         'num_coments': num_coments,
-        'num_temas_estudados': num_temas_estudados,
         'num_assuntos': num_assuntos,
+        'num_temas_estudados': num_temas_estudados,
         'percentual_temas_estudados': percentual_temas_estudados,
+        'num_temas_revisados': num_temas_revisados,
+        'percentual_temas_revisados': percentual_temas_revisados,
         'num_cis': num_cis,
         'num_visits': num_visits,
         'db_server': db_server,
@@ -205,13 +208,34 @@ class TemaListViewSorted(LoginRequiredMixin, generic.ListView):
 
         #Verifica e configura o tipo de filtragem e classificação escolhida pelo usuário
         if self.filtro_sem_url != '':
-            queryset=Tema.objects.filter(semana__exact=int(self.filtro_sem_url)).order_by(self.sort_str)
+            queryset=Tema.objects.filter(semana__exact=int(self.filtro_sem_url))#.order_by(self.sort_str)
             self.filtro_url=f"&semana={self.filtro_sem_url}"
         elif self.filtro_cat_url !='':
-            queryset=Tema.objects.filter(categoria__exact=f'{self.filtro_cat_url}').order_by(self.sort_str)
+            queryset=Tema.objects.filter(categoria__exact=f'{self.filtro_cat_url}')#.order_by(self.sort_str)
             self.filtro_url=f"&categoria={self.filtro_cat_url}"
         else:
-            queryset=Tema.objects.all().order_by(self.sort_str)
+            queryset=Tema.objects.all()#.order_by(self.sort_str)
+
+
+        # aplicar ordenação no final (para permitir status custom)
+        field_name = self.sort_mapa[tmp][1]  # ex.: 'status', 'semana', etc.
+
+        if field_name == "status":
+            weight = Case(
+                When(status="revisado", then=Value(0)),
+                When(status="estudado", then=Value(1)),
+                When(status="nenhum", then=Value(2)),
+                default=Value(3),
+                output_field=IntegerField(),
+            )
+            if self.sort_url[1] == 'a':
+                queryset = queryset.annotate(_status_w=weight).order_by('_status_w')
+            else:
+                queryset = queryset.annotate(_status_w=weight).order_by('-_status_w')
+        else:
+            queryset = queryset.order_by(self.sort_str)
+
+
 
         return queryset
 
