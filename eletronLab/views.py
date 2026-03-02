@@ -1098,7 +1098,8 @@ def TemaTemaDelete(request, pk):
     return redirect("tema-detail", pk=tema_id)
 
 #  ################################################################################################################
-class TemaCiCreateView(LoginRequiredMixin, generic.CreateView):
+class TemaCiCreateView(LoginRequiredMixin, AdminRequiredMixin, generic.CreateView):
+    permission_required = "eletronLab.add_temaci"
     model = TemaCi
     fields = ["ci"]
     template_name = "eletronLab/tema_ci_form.html"
@@ -1120,7 +1121,8 @@ class TemaCiCreateView(LoginRequiredMixin, generic.CreateView):
         return ctx
 
 #  ################################################################################################################
-class TemaCompCreateView(LoginRequiredMixin, generic.CreateView):
+class TemaCompCreateView(LoginRequiredMixin, AdminRequiredMixin, generic.CreateView):
+    permission_required = "eletronLab.add_temacomp"
     model = TemaComp
     fields = ["comp"]
     template_name = "eletronLab/tema_comp_form.html"
@@ -1142,7 +1144,8 @@ class TemaCompCreateView(LoginRequiredMixin, generic.CreateView):
         return ctx
 
 #  ################################################################################################################
-class TemaInfoCreateView(LoginRequiredMixin, generic.CreateView):
+class TemaInfoCreateView(LoginRequiredMixin, AdminRequiredMixin, generic.CreateView):
+    permission_required = "eletronLab.add_temainfo"
     model = TemaInfo
     fields = ["info"]
     template_name = "eletronLab/tema_info_form.html"
@@ -1163,7 +1166,8 @@ class TemaInfoCreateView(LoginRequiredMixin, generic.CreateView):
         ctx["tema"] = self.tema
         return ctx
 
-class TemaTemaCreateView(LoginRequiredMixin, generic.CreateView):
+class TemaTemaCreateView(LoginRequiredMixin, AdminRequiredMixin, generic.CreateView):
+    permission_required = "eletronLab.add_tematema"
     model = TemaTema
     fields = ["tema_rel"]  # NÃO deixe o usuário escolher o "tema" aqui
     template_name = "eletronLab/tema_tema_form.html"
