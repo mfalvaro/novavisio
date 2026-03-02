@@ -6,34 +6,49 @@
 {% block content %}
 <!-- Add additional CSS, img in static files -->
   {% load static %}
-<h4>Tema: {{ tema.titulo }} <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/temas/tema{{ tema.semana|stringformat:"02d" }}_{{ tema.ordem }}.pdf"><img src="{% static 'res/' %}download.jpg"></a></h4>
-<p><strong>Categoria:</strong> {{ tema.categoria }}, {{ tema.pagina }} </p> <!-- author detail link not yet defined -->
-<p><strong>Semana:</strong> {{ tema.semana }}.{{ tema.ordem }}</p>
+<p>
+	<span id="parag-tit1">Tema: {{ tema.titulo }}</span>
+	<a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/temas/tema{{ tema.semana|stringformat:"02d" }}_{{ tema.ordem }}.pdf"><img src="{% static 'res/' %}download.jpg"></a>
+	<span>&nbsp;&nbsp;</span>
+	<a href="{{ tema.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
+	<br>
+	<strong>Categoria:</strong> {{ tema.categoria }}, {{ tema.pagina }}
+	<br>
+	<strong>Semana:</strong> {{ tema.semana }}.{{ tema.ordem }}
+</p>
 
 <!-- LISTA DE COMENTÁRIOS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
 <div style="margin-left:20px;margin-top:20px">
-	<h5>Comentários</h5>
+	<p>
+		<span id="parag1">Comentários</span>
+		<span>&nbsp;&nbsp;</span>
+		<span id="parag2"><a href="{% url 'home_eLab' %}temacoments/create/?tema={{ tema.codtema }}">+...</a></span>
+		<span>&nbsp;&nbsp;</span>
+		<span id="parag2"><a href="{% url 'coments' %}create/?tema={{ tema.codtema }}&coment=criar">novo</a></span>
+	</p>
 	<ul>
-		{% for tc in tema.temacoment_set.all %}
-		{% if tc.coment.assunto == 'outro tema' %}
+		{% for tc in comentarios %}
+		{% if tc.coment.assunto == 'projeto' %}
 		<li>
-			<a href="{{ tc.coment.get_absolute_url }}">{{ tc.coment.assunto }}</a> :: <a href="{% url 'outro_tema' %}?outrotema={{ tc.coment.detalhe }}">{{ tc.coment.detalhe }}</a> ({{ tc.data|date:"j/n/y - G:i" }}) <a href="{{ tc.get_absolute_url }}/delete/?tema={{ tema.codtema }}">  <img src="{% static 'res/' %}delete.png"></a>
+			<a href="{{ tc.coment.get_absolute_url }}">{{ tc.coment.assunto }}</a> ::
+			<a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/projetos/{{ tc.coment.detalhe }}.jpg">{{ tc.coment.detalhe }}</a>
+			({{ tc.data|date:"j/n/y - G:i" }})
+			<a href="{{ tc.get_absolute_url }}/delete/?tema={{ tema.codtema }}"><img src="{% static 'res/' %}delete.png"></a>
 		</li>
-		{% elif tc.coment.assunto == 'ci' %}
+		{% elif tc.coment.assunto == 'link' %}
 		<li>
-			<a href="{% url 'ci-detail' tc.coment.detalhe %}">{{ tc.coment.assunto }}</a> :: <a href="{{ tc.coment.get_absolute_url }}">{{ tc.coment.detalhe }}</a> ({{ tc.data|date:"j/n/y - G:i" }}) <a href="{{ tc.get_absolute_url }}/delete/?tema={{ tema.codtema }}">  <img src="{% static 'res/' %}delete.png"></a>
-		</li>
-		{% elif tc.coment.assunto == 'comp' %}
-		<li>
-			<a href="{% url 'comp-detail' tc.coment.detalhe %}">{{ tc.coment.assunto }}</a> :: <a href="{{ tc.coment.get_absolute_url }}">{{ tc.coment.detalhe }}</a> ({{ tc.data|date:"j/n/y - G:i" }}) <a href="{{ tc.get_absolute_url }}/delete/?tema={{ tema.codtema }}">  <img src="{% static 'res/' %}delete.png"></a>
-		</li>
-		{% elif tc.coment.assunto == 'projeto' %}
-		<li>
-			<a href="{{ tc.coment.get_absolute_url }}">{{ tc.coment.assunto }}</a> :: <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/projetos/{{ tc.coment.detalhe }}.jpg">{{ tc.coment.detalhe }}</a> ({{ tc.data|date:"j/n/y - G:i" }}) <a href="{{ tc.get_absolute_url }}/delete/?tema={{ tema.codtema }}">  <img src="{% static 'res/' %}delete.png"></a>
+			<a href="{{ tc.coment.get_absolute_url }}">{{ tc.coment.assunto }}</a> ::
+			<a href="{{ tc.coment.obs }}">{{ tc.coment.detalhe }}</a> ::::  ({{ tc.data|date:"j/n/y - G:i" }})
+			<a href="{{ tc.get_absolute_url }}/delete/?tema={{ tema.codtema }}"><img src="{% static 'res/' %}delete.png"></a>
 		</li>
 		{% else %}
 		<li>
-			<a href="{{ tc.coment.get_absolute_url }}">{{ tc.coment.assunto }} :: {{ tc.coment.detalhe }}</a> ({{ tc.data|date:"j/n/y - G:i" }}) <a href="{{ tc.get_absolute_url }}/delete/?tema={{ tema.codtema }}">  <img src="{% static 'res/' %}delete.png"></a>
+			<a href="{{ tc.coment.get_absolute_url }}">{{ tc.coment.assunto }} :: {{ tc.coment.detalhe }}</a>
+			{% if tc.coment.obs %}
+				:: {{ tc.coment.obs }}
+			{% endif %}
+			({{ tc.data|date:"j/n/y - G:i" }})
+			<a href="{{ tc.get_absolute_url }}/delete/?tema={{ tema.codtema }}"><img src="{% static 'res/' %}delete.png"></a>
 		</li>
 		{% endif %}
 		{% empty %}
@@ -42,22 +57,102 @@
 	</ul>
 </div>
 
-<!-- BOTÕES PARA EDITAR TEMA E ASSOCIAR COMENTÁRIOS NOVOS **************************************************************************************************************** -->
-<div>
-	<a href="{{ tema.get_absolute_url }}/update">Editar tema...</a>
-</div>
-<div>
-	<a href="{% url 'home_eLab' %}temacoments/create/?tema={{ tema.codtema }}">Criar tema/coment existente...</a>
-</div>
-<div id="fim_de_pagina1">
-	<a href="{% url 'coments' %}create/?tema={{ tema.codtema }}&coment=criar">Criar tema/coment novo...</a>
-	<br>
-	<br>
+<!-- LISTA DE CIS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+<div style="margin-left:20px;margin-top:20px">
+	<span>
+		<span id="parag1">Cis usados</span>
+		<span>&nbsp;&nbsp;&nbsp;</span>
+		<span id="parag2"><a href="{% url 'tema_add_ci' tema.codtema %}">+...</a></span>
+	</span>
+
+	<ul>
+		{% for tc in tema_cis %}
+		<li>
+			<a href="{% url 'ci-detail' tc.ci.codci %}">{{ tc.ci.codci }}</a>
+			::  ({{ tc.data|date:"j/n/y - G:i" }})
+			<a href="{% url 'temaci_delete' tc.pk %}"><img src="{% static 'res/' %}delete.png"></a>
+		</li>
+		{% empty %}
+		<li>Sem CIs cadastrados para este tema.</li>
+		{% endfor %}
+	</ul>
 </div>
 
-{% endblock %}
+<!-- LISTA DE COMPONENNTES @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+<div style="margin-left:20px;margin-top:20px">
+	<p>
+		<span id="parag1">Componentes principais</span>
+		<span>&nbsp;&nbsp;&nbsp;</span>
+		<span id="parag2"><a href="{% url 'tema_add_comp' tema.codtema %}">+...</a></span>
+	</p>
 
-{% block content1 %}
+
+	<ul>
+		{% for tc in tema_comps %}
+		<li>
+			<a href="{% url 'comp-detail' tc.comp.codcomp %}">{{ tc.comp.codcomp }}</a>
+			::  ({{ tc.data|date:"j/n/y - G:i" }})
+			<a href="{% url 'temacomp_delete' tc.pk %}"><img src="{% static 'res/' %}delete.png"></a>
+		</li>
+		{% empty %}
+		<p>Sem componentes cadastrados para este tema.</p>
+		{% endfor %}
+	</ul>
+</div>
+
+<!-- LISTA DE INFOS/CONCEITOS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+<div style="margin-left:20px;margin-top:20px">
+	<p>
+		<span id="parag1">Infos / conceitos</span>
+		<span>&nbsp;&nbsp;&nbsp;</span>
+		<span id="parag2"><a href="{% url 'tema_add_info' tema.codtema %}">+...</a></span>
+	</p>
+
+
+	<ul>
+		{% for ti in tema_infos %}
+		<li>
+			<a href="{% url 'info-detail' ti.info.pk %}">{{ ti.info.titulo }}</a>
+			::  ({{ ti.data|date:"j/n/y - G:i" }})
+			<a href="{% url 'temainfo_delete' ti.pk %}"><img src="{% static 'res/' %}delete.png"></a>
+		</li>
+		{% empty %}
+		<p>Sem infos cadastradas para este tema.</p>
+		{% endfor %}
+	</ul>
+</div>
+
+<!-- LISTA DE OUTROS TEMAS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+<div style="margin-left:20px;margin-top:20px">
+
+	<p>
+		<span id="parag1">Outros temas relacionados</span>
+		<span>&nbsp;&nbsp;&nbsp;</span>
+		<span id="parag2"><a href="{% url 'tema_add_tema_rel' tema.codtema %}?tema={{ tema.codtema }}">+...</a></span>
+	</p>
+
+	<ul>
+		{% for tt in tema_temas %}
+		<li>
+			<a href="{% url 'tema-detail' tt.tema_rel.pk %}">
+				{{ tt.tema_rel.categoria }} {{ tt.tema_rel.pagina }} — {{ tt.tema_rel.titulo }}
+			</a>
+			::  ({{ tt.data|date:"j/n/y - G:i" }})
+			<a href="{% url 'tematema_delete' tt.pk %}"><img src="{% static 'res/' %}delete.png"></a>
+		</li>
+		{% empty %}
+		<p>Sem temas relacionados.</p>
+		{% endfor %}
+	</ul>
+</div>
+
+
+<br>
+<br>
+
+	{% endblock %}
+
+	{% block content1 %}
 <p>Faça o login para acessar o conteúdo.</p>
-{% endblock %}
+	{% endblock %}
 

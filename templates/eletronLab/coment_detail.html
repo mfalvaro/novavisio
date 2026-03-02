@@ -15,14 +15,22 @@
 	<span id="parag2"><a href="{{ coment.get_absolute_url }}/delete">Apagar...</a></span>
 </p>
 
-<p><strong>Assunto:</strong> {{ coment.assunto }} </p>
+<p>
+	<strong>Assunto:</strong> {{ coment.assunto }} 
+	</br>
   {% if coment.assunto == 'outro tema' %}
-<p><strong>Detalhe:</strong> <a href="{% url 'outro_tema' %}?outrotema={{ coment.detalhe }}">{{ coment.detalhe }}</a> </p>
+<strong>Detalhe:</strong> <a href="{% url 'outro_tema' %}?outrotema={{ coment.detalhe }}">{{ coment.detalhe }}</a> 
   {% elif coment.assunto == 'projeto' %}
-<p><strong>Detalhe:</strong> <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/projetos/{{ coment.detalhe }}.jpg">{{ coment.detalhe }}</a> </p>
+<strong>Detalhe:</strong> <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/projetos/{{ coment.detalhe }}.jpg">{{ coment.detalhe }}</a> 
   {% else %}
-<p><strong>Detalhe:</strong> {{ coment.detalhe }} </p>
+	<strong>Detalhe:</strong> {{ coment.detalhe }} 
   {% endif %}
+
+  {% if coment.obs %}
+	</br>
+    <strong>Obs:</strong> {{ coment.obs }}
+    {% endif %}
+</p>
 
 <!-- LISTA DE TEMAS ASSOCIADOS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
 <div style="margin-left:20px;margin-top:20px">
@@ -34,10 +42,11 @@
 		{% for tc in temas_page %}
 		<li>
 			<a href="{{ tc.tema.get_absolute_url }}">{{ tc.tema.titulo }}</a>
-			({{ tc.tema.semana }}.{{ tc.tema.ordem }} - {{ tc.tema.categoria }}, {{ tc.tema.pagina }})
+			:: ({{ tc.tema.semana }}.{{ tc.tema.ordem }} - {{ tc.tema.categoria }}, {{ tc.tema.pagina }}) ::  ({{ tc.data|date:"j/n/y - G:i" }})
 			<a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/temas/tema{{ tc.tema.semana|stringformat:"02d" }}_{{ tc.tema.ordem }}.pdf">
 				<img src="{% static 'res/' %}download2.jpg">
 			</a>
+			<a href="{{ tc.get_absolute_url }}/delete/?tema={{ tc.tema.codtema }}"><img src="{% static 'res/' %}delete.png"></a>
 		</li>
 		{% empty %}
 		<p>Não há temas associados a este comentário.</p>
@@ -87,6 +96,8 @@
 			<a href="{{ cc.ci.get_absolute_url }}">
 				{{ cc.ci.codci }} - {{ cc.ci.sobre }}
 			</a>
+			::  ({{ cc.data|date:"j/n/y - G:i" }})
+			
 			<a href="{% url 'cicoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">
 				<img src="{% static 'res/' %}delete.png">
 			</a>
@@ -139,6 +150,7 @@
 			<a href="{{ cc.comp.get_absolute_url }}">
 				{{ cc.comp.codcomp }} - {{ cc.comp.sobre }}
 			</a>
+			::  ({{ cc.data|date:"j/n/y - G:i" }})
 			<a href="{% url 'compcoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">
 				<img src="{% static 'res/' %}delete.png">
 			</a>
@@ -181,34 +193,26 @@
 
 <!-- INFOS COMPLEMENTARES @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
 <div style="margin-left:20px;margin-top:20px">
+
 	<p>
-		<span id="parag1">Infos complementares</span>
-		<span id="parag2">
-			<a href="{% url 'comentinfo-create' %}?codcoment={{ coment.codcoment }}">+...</a>
-		</span>
+		<span id="parag1" ">Infos/conceitos</span>
+		<span id="parag2"><a href="{% url 'infocoment-create' %}?coment={{ coment.codcoment }}&from=coment">+...</a></span>
 	</p>
 
-	<ul>
-		{% for i in infos_page %}
-		<li>
-			{% if i.is_link %}
-			<a href="{{ i.info }}" target="_blank">{{ i.titulo|default:i.info }}</a>
-			{% else %}
-			{% if i.titulo %}<strong>{{ i.titulo }}</strong><br>{% endif %}
-			{{ i.info|linebreaksbr }}
-			{% endif %}
 
-			&nbsp;&nbsp;
-			<a href="{% url 'comentinfo-update' i.pk %}?next={{ request.get_full_path|urlencode }}">
-				Editar
+	<ul>
+		{% for cc in infos_page %}
+		<li>
+			<a href="{{ cc.info.get_absolute_url }}">
+				{{ cc.info.titulo }}
 			</a>
-			&nbsp;
-			<a href="{% url 'comentinfo-delete' i.pk %}?next={{ request.get_full_path|urlencode }}">
+			::  ({{ cc.data|date:"j/n/y - G:i" }})
+			<a href="{% url 'infocoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">
 				<img src="{% static 'res/' %}delete.png">
 			</a>
 		</li>
 		{% empty %}
-		<p>Não há infos complementares neste comentário.</p>
+		<p>Não há infos associados a este comentário.</p>
 		{% endfor %}
 	</ul>
 

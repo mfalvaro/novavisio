@@ -86,7 +86,7 @@ WSGI_APPLICATION = 'novavisio.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'gpsgeo$bd_eletronlab',
+        'NAME': 'gpsgeo$bd_eletronlab2',
         'USER': 'gpsgeo',
         'PASSWORD': 'lab1@Eletron',
         'HOST':'gpsgeo.mysql.pythonanywhere-services.com',

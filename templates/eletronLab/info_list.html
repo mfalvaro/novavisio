@@ -1,0 +1,49 @@
+<!-- templates/eletronLab/ci_home.html-->
+{% extends 'eletronLab/home_eLab.html' %}
+
+{% block title %}eLab Componentes{% endblock %}
+<!-- Add additional CSS, img in static files -->
+{% load static %}
+
+{% block content %}
+<p>
+	<span id="parag1">Info/conceitos estudados</span>
+	<span>&nbsp;&nbsp;&nbsp;</span>
+	<span id="parag2"><a href="{% url 'info_create' %}">Adicionar info/conceito...</a></span>
+</p>
+	{% if infos %}
+<ol>
+	{% for info in infos %}
+	<li>
+		<a href="{{ info.get_absolute_url }}">{{ info.titulo }}</a>
+		<a href="{{ info.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
+		<a href="{{ info.get_absolute_url }}/delete">  <img src="{% static 'res/' %}delete.png"></a>
+	</li>
+	{% endfor %}
+</ol>
+		{% else %}
+<p>Não existem infos no lab.</p>
+	{% endif %}
+	</br>
+{% endblock %}
+
+
+{% block content1 %}
+<p id="parag1">Componentes estudados</p>
+	{% if infos %}
+<ol>
+	{% for info in infos %}
+	<li>
+		<a href="{{ info.get_absolute_url }}">{{ info.titulo }}</a>
+	</li>
+	{% endfor %}
+</ol>
+	{% else %}
+<p>Não existem infos no lab.</p>
+	{% endif %}
+	</br>
+{% endblock %}
+
+
+
+

@@ -16,8 +16,16 @@
 /* parágrafo tipo um usado em coment-detail */
 #parag1 {
 		text-align: left;
-		font-size: 20pt;
+		font-size: 14pt;
+		font-weight: bold;
+		text-decoration: underline;
 		}
+/* parágrafo tipo titulo1 */
+#parag-tit1 {
+	text-align: left;
+	font-size: 14pt;
+	font-weight: bold;
+}
 /* parágrafo tipo um usado em coment-detail */
 .parag3 {
 	text-align: left;

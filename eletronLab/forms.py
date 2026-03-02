@@ -7,9 +7,8 @@
 """
 ##-----------------------------IMPORTS------------------------------------------
 from django import forms
-from eletronLab.models import Coment, CiComent, CompComent
+from eletronLab.models import Coment, CiComent, CompComent, InfoComent
 from eletronLab.models import TemaComent
-from eletronLab.models import ComentInfo
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
@@ -17,10 +16,13 @@ from django.contrib.auth.models import User
 ##--------------------FUNCTIONS AND CLASSES-------------------------------------
 # ##################################################################################################################################
 class ComentCreateForm(forms.ModelForm):
-    detalhe = forms.CharField(widget=forms.Textarea, required=False)
+    assunto = forms.CharField(max_length=75)
+    detalhe = forms.CharField(widget=forms.Textarea, max_length=255, required=False)
+    obs = forms.CharField(widget=forms.Textarea, required=False)
+
     class Meta:
         model = Coment
-        fields = ['assunto', 'detalhe']
+        fields = ['assunto', 'detalhe', 'obs']
 
     def clean_assunto(self):
         data = self.cleaned_data["assunto"]
@@ -35,6 +37,10 @@ class ComentCreateForm(forms.ModelForm):
             data = data.replace('transistor','transístor')
         return data # sempre retorne o valor, mesmo que não tenha sido modificado
 
+    def clean_obs(self):
+        data = self.cleaned_data['obs']
+        data = data.strip()
+        return data # sempre retorne o valor, mesmo que não tenha sido modificado
 
 # ##################################################################################################################################
 class TemaComentCreateForm(forms.ModelForm):
@@ -46,7 +52,6 @@ class TemaComentCreateForm(forms.ModelForm):
 
 # ##################################################################################################################################
 class CiComentCreateForm(forms.ModelForm):
-    obs = forms.CharField(widget=forms.Textarea, required=False)
     coment = forms.ModelChoiceField(
         queryset=Coment.objects.all(),
         label='Comentário'
@@ -54,8 +59,7 @@ class CiComentCreateForm(forms.ModelForm):
 
     class Meta:
         model = CiComent
-        fields = ['ci','coment', 'obs']   # ← tira 'ci'
-
+        fields = ['ci','coment']   # ← tira 'ci'
 
 # ##################################################################################################################################
 class CiComentNovoForm(forms.Form):
@@ -65,7 +69,6 @@ class CiComentNovoForm(forms.Form):
 
 # ##################################################################################################################################
 class CompComentCreateForm(forms.ModelForm):
-    obs = forms.CharField(widget=forms.Textarea, required=False)
     coment = forms.ModelChoiceField(
         queryset=Coment.objects.all(),
         label='Comentário'
@@ -73,8 +76,7 @@ class CompComentCreateForm(forms.ModelForm):
 
     class Meta:
         model = CompComent
-        fields = ['comp','coment', 'obs']   # ← tira 'comp'
-
+        fields = ['comp','coment']   # ← tira 'comp'
 
 # ##################################################################################################################################
 class CompComentNovoForm(forms.Form):
@@ -91,10 +93,18 @@ class LeitorSignupForm(UserCreationForm):
         fields = ("username", "email", "password1", "password2")
 
 # ##################################################################################################################################
-class ComentInfoForm(forms.ModelForm):
+class InfoComentCreateForm(forms.ModelForm):
+    coment = forms.ModelChoiceField(
+        queryset=Coment.objects.all(),
+        label='Comentário'
+    )
+
     class Meta:
-        model = ComentInfo
-        fields = ["coment", "titulo", "info"]
-        widgets = {
-            "info": forms.Textarea(attrs={"rows": 6}),
-        }
+        model = InfoComent
+        fields = ['info','coment']   # ← tira 'comp'
+
+# ##################################################################################################################################
+class InfoComentNovoForm(forms.Form):
+    assunto = forms.CharField(max_length=75)
+    detalhe = forms.CharField(widget=forms.Textarea, required=False)
+    obs = forms.CharField(widget=forms.Textarea, required=False)

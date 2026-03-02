@@ -1,0 +1,20 @@
+{% extends 'eletronLab/home_eLab.html' %}
+{% block content %}
+<h4>Adicionar CI ao tema: {{ tema.titulo }}</h4>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Salvar</button>
+</form>
+
+<p><a href="{{ tema.get_absolute_url }}">Voltar</a></p>
+{% endblock %}
+
+{% block content1 %}
+	</br>
+<p>Faça o login para acessar o conteúdo.</p>
+	</br>
+{% endblock %}
+
+

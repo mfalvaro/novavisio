@@ -1,0 +1,32 @@
+<!-- templates/estudoa/temacoment_confirm_delete.html-->
+{% extends 'eletronLab/home_eLab.html' %}
+
+{% block content %}
+
+<h3>Remover comentário deste Info?</h3>
+
+<p>
+	Deseja remover o comentário:<br>
+	<strong>{{ object.coment.assunto }} :: {{ object.coment.detalhe }}</strong><br>
+	do Info:<br>
+	<strong>{{ object.info }}</strong>
+</p>
+
+<form method="post">
+	{% csrf_token %}
+	<input type="hidden" name="next" value="{{ next }}">
+	<button type="submit">Sim, remover associação</button>
+	<a href="{{ next|default:'/' }}">Cancelar</a>
+</form>
+
+{% endblock %}
+
+{% block content1 %}
+	</br>
+<p>Faça o login para acessar o conteúdo.</p>
+	</br>
+{% endblock %}
+
+
+
+

@@ -16,8 +16,6 @@ from django.urls import reverse
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 
-
-
 ##----------------------CLASSES AND FUNCTIONS ----------------------------------
 # ########################################################################################################################################################################################
 class Coment(models.Model):
@@ -25,10 +23,18 @@ class Coment(models.Model):
     assunto = models.CharField(db_column='Assunto', max_length=255, blank=True, null=True, help_text='De maneira geral, do que trata o comentário?')  # Field name made lowercase.
     detalhe = models.CharField(db_column='Detalhe', max_length=255, blank=True, null=True, help_text='Descreva detalhes ...')  # Field name made lowercase.
 
+
+    # NOVO
+    obs = models.TextField(
+        db_column='Obs',
+        blank=True,
+        null=True,
+        help_text='Observação adicional (link ou texto livre).'
+    )
+
     class Meta:
         #managed = False
         db_table = 'coment'
-        unique_together = (('assunto', 'detalhe'),)
         ordering = ['assunto', 'detalhe']
 
     def __str__(self):
@@ -82,6 +88,60 @@ class Tema(models.Model):
         return reverse('tema-detail', args=[str(self.codtema)])
 
 # ########################################################################################################################################################################################
+class Ci(models.Model):
+    codci = models.CharField(db_column='Codci', primary_key=True, max_length=15, blank=True, null=False, help_text='Nome do circuito integrado')
+    semana = models.IntegerField(db_column='Semana', blank=True, null=True, help_text='Semana que apareceu pela primeira vez')
+    sobre = models.CharField(db_column='Sobre', max_length=75, blank=True, null=True, help_text='Descrição do circuito integrado')
+
+    class Meta:
+        #managed = False
+        db_table = 'ci'
+        ordering = ['semana']
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return f'semana {self.semana} | ci {self.codci} - {self.sobre}'
+
+    def get_absolute_url(self):
+        """Returns the url to access a detail record for a ci."""
+        return reverse('ci-detail', args=[str(self.codci)])
+
+# ########################################################################################################################################################################################
+class Comp(models.Model):
+    codcomp = models.CharField(db_column='codcomp', primary_key=True, max_length=15, blank=True, null=False, help_text='Nome do componente')
+    sobre = models.CharField(db_column='sobre', max_length=75, blank=True, null=True, help_text='Descrição do componente')
+
+    class Meta:
+        #managed = False
+        db_table = 'comp'
+        ordering = ['codcomp']
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return f'Componente {self.codcomp} - {self.sobre}'
+
+    def get_absolute_url(self):
+        """Returns the url to access a detail record."""
+        #return f"comp/{str(self.codcomp)}"
+        return reverse('comp-detail', args=[str(self.codcomp)])
+
+# ########################################################################################################################################################################################
+class Info(models.Model):
+    codinfo = models.AutoField(db_column='Codinfo', primary_key=True)
+    titulo = models.CharField(db_column='Titulo', max_length=150, blank=True, null=True)
+    sobre = models.CharField(db_column='Sobre', max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = 'info'
+        ordering = ['titulo']
+
+    def __str__(self):
+        return f'{self.titulo}'
+
+    def get_absolute_url(self):
+        return reverse('info-detail', args=[str(self.codinfo)])
+
+# ########################################################################################################################################################################################
 class TemaComent(models.Model):
     codtema_coment = models.AutoField(db_column='Codtema_coment', primary_key=True)  # Field name made lowercase.
     tema = models.ForeignKey(Tema, models.DO_NOTHING, db_column='Tema', blank=True, null=True)  # Field name made lowercase.
@@ -103,51 +163,10 @@ class TemaComent(models.Model):
         return reverse('temacoment-detail', args=[str(self.codtema_coment)])
 
 # ########################################################################################################################################################################################
-class Ci(models.Model):
-    codci = models.CharField(db_column='Codci', primary_key=True, max_length=15, blank=True, null=False, help_text='Nome do circuito integrado')
-    semana = models.IntegerField(db_column='Semana', blank=True, null=True, help_text='Semana que apareceu pela primeira vez')
-    sobre = models.CharField(db_column='Sobre', max_length=75, blank=True, null=True, help_text='Descrição do circuito integrado')
-    coment = models.ForeignKey(Coment, models.DO_NOTHING, db_column='Coment', blank=True, null=True, help_text='Coment único associado ao ci')  # Field name made lowercase.
-
-    class Meta:
-        #managed = False
-        db_table = 'ci'
-        ordering = ['semana']
-
-    def __str__(self):
-        """String for representing the Model object."""
-        return f'semana {self.semana} | ci {self.codci} - {self.sobre}'
-
-    def get_absolute_url(self):
-        """Returns the url to access a detail record for a ci."""
-        return reverse('ci-detail', args=[str(self.codci)])
-
-# ########################################################################################################################################################################################
-class Comp(models.Model):
-    codcomp = models.CharField(db_column='codcomp', primary_key=True, max_length=15, blank=True, null=False, help_text='Nome do componente')
-    sobre = models.CharField(db_column='sobre', max_length=75, blank=True, null=True, help_text='Descrição do componente')
-    coment = models.ForeignKey(Coment, models.DO_NOTHING, db_column='coment_id', blank=True, null=True, help_text='Coment único associado ao comp')  # Field name made lowercase.
-
-    class Meta:
-        #managed = False
-        db_table = 'comp'
-        ordering = ['codcomp']
-
-    def __str__(self):
-        """String for representing the Model object."""
-        return f'Componente {self.codcomp} - {self.sobre}'
-
-    def get_absolute_url(self):
-        """Returns the url to access a detail record."""
-        #return f"comp/{str(self.codcomp)}"
-        return reverse('comp-detail', args=[str(self.codcomp)])
-
-# ########################################################################################################################################################################################
 class CiComent(models.Model):
     codci_coment = models.AutoField(db_column='codci_coment', primary_key=True)  # Field name made lowercase.
     ci = models.ForeignKey(Ci, models.DO_NOTHING, db_column='ci_id', blank=True, null=True)  # Field name made lowercase.
     coment = models.ForeignKey(Coment, models.DO_NOTHING, db_column='coment_id', blank=True, null=True)  # Field name made lowercase.
-    obs = models.CharField(db_column='obs', max_length=275, blank=True, null=True, help_text='Observação, pode ser um link')
     data = models.DateTimeField(db_column='data', blank=True, null=True, auto_now_add=True)  # Field name made lowercase.
 
     class Meta:
@@ -169,7 +188,6 @@ class CompComent(models.Model):
     codcomp_coment = models.AutoField(db_column='codcomp_coment', primary_key=True)  # Field name made lowercase.
     comp = models.ForeignKey(Comp, models.DO_NOTHING, db_column='comp_id', blank=True, null=True, help_text='Componente')  # Field name made lowercase.
     coment = models.ForeignKey(Coment, models.DO_NOTHING, db_column='coment_id', blank=True, null=True, help_text='Comentário')  # Field name made lowercase.
-    obs = models.CharField(db_column='obs', max_length=275, blank=True, null=True, help_text='Observação, pode ser um link')
     data = models.DateTimeField(db_column='data', blank=True, null=True, auto_now_add=True)  # Field name made lowercase.
 
     class Meta:
@@ -186,50 +204,124 @@ class CompComent(models.Model):
         """Returns the url to access a detail record for this book."""
         return reverse('compcoment-detail', args=[str(self.codcomp_coment)])
 
-
 # ########################################################################################################################################################################################
-class ComentInfo(models.Model):
-    codinfo = models.AutoField(db_column='Codinfo', primary_key=True)
-
-    coment = models.ForeignKey(
-        Coment,
-        on_delete=models.CASCADE,
-        db_column='Coment',
-        related_name='infos',
-        null=False,
-        blank=False,
-    )
-
-    titulo = models.CharField(
-        db_column='Titulo',
-        max_length=150,
-        blank=True,
-        null=True,
-        help_text='Título curto (bom para renderizar links).'
-    )
-
-    info = models.TextField(
-        db_column='Info',
-        null=False,
-        blank=False,
-        help_text='Texto longo ou URL.'
-    )
+class InfoComent(models.Model):
+    codinfo_coment = models.AutoField(db_column='Codinfo_coment', primary_key=True)
+    info = models.ForeignKey('Info', models.DO_NOTHING, db_column='Info', blank=True, null=True)
+    coment = models.ForeignKey('Coment', models.DO_NOTHING, db_column='Coment', blank=True, null=True)
+    data = models.DateTimeField(db_column='Data', blank=True, null=True, auto_now_add=True)
 
     class Meta:
-        db_table = 'coment_info'
-        ordering = ['codinfo']
-
-    @property
-    def is_link(self) -> bool:
-        val = (self.info or "").strip()
-        if not val:
-            return False
-        v = URLValidator(schemes=["http", "https"])
-        try:
-            v(val)
-            return True
-        except ValidationError:
-            return False
+        db_table = 'info_coment'
+        unique_together = (('info', 'coment'),)
+        ordering = ['info', 'coment']
 
     def __str__(self):
-        return f'{self.coment.assunto} :: {self.titulo or self.info[:50]}'
+        return f'{self.info} - {self.coment.assunto}::{self.coment.detalhe}'
+
+# ########################################################################################################################################################################################
+class TemaCi(models.Model):
+    codtema_ci = models.AutoField(db_column='Codtema_ci', primary_key=True)
+    tema = models.ForeignKey(Tema, models.DO_NOTHING, db_column='Tema', blank=True, null=True)
+    ci = models.ForeignKey(Ci, models.DO_NOTHING, db_column='Ci', blank=True, null=True)
+    data = models.DateTimeField(db_column='Data', blank=True, null=True, auto_now_add=True)
+
+    class Meta:
+        db_table = 'tema_ci'
+        unique_together = (('tema', 'ci'),)
+        ordering = ['tema', 'ci']
+
+    def __str__(self):
+        return f'{self.tema} ↔ CI {self.ci.codci}'
+
+# ########################################################################################################################################################################################
+class TemaComp(models.Model):
+    codtema_comp = models.AutoField(db_column='Codtema_comp', primary_key=True)
+    tema = models.ForeignKey(Tema, models.DO_NOTHING, db_column='Tema', blank=True, null=True)
+    comp = models.ForeignKey(Comp, models.DO_NOTHING, db_column='Comp', blank=True, null=True)
+    data = models.DateTimeField(db_column='Data', blank=True, null=True, auto_now_add=True)
+
+    class Meta:
+        db_table = 'tema_comp'
+        unique_together = (('tema', 'comp'),)
+        ordering = ['tema', 'comp']
+
+    def __str__(self):
+        return f'{self.tema} ↔ COMP {self.comp.codcomp}'
+
+# ########################################################################################################################################################################################
+class TemaInfo(models.Model):
+    codtema_info = models.AutoField(db_column='Codtema_info', primary_key=True)
+    tema = models.ForeignKey(Tema, models.DO_NOTHING, db_column='Tema', blank=True, null=True)
+    info = models.ForeignKey(Info, models.DO_NOTHING, db_column='Info', blank=True, null=True)
+    data = models.DateTimeField(db_column='Data', blank=True, null=True, auto_now_add=True)
+
+    class Meta:
+        db_table = 'tema_info'
+        unique_together = (('tema', 'info'),)
+        ordering = ['tema', 'info']
+
+    def __str__(self):
+        return f'{self.tema} ↔ INFO {self.info.titulo}'
+
+# ########################################################################################################################################################################################
+class TemaTema(models.Model):
+    codtema_tema = models.AutoField(db_column='Codtema_tema', primary_key=True)
+    tema = models.ForeignKey(Tema, models.DO_NOTHING, db_column='Tema', related_name='relacoes_origem', blank=True, null=True)
+    tema_rel = models.ForeignKey(Tema, models.DO_NOTHING, db_column='Tema_rel', related_name='relacoes_destino', blank=True, null=True)
+    data = models.DateTimeField(db_column='Data', blank=True, null=True, auto_now_add=True)
+
+    class Meta:
+        db_table = 'tema_tema'
+        unique_together = (('tema', 'tema_rel'),)
+        ordering = ['tema', 'tema_rel']
+
+    def __str__(self):
+        return f'{self.tema} ↔ {self.tema_rel}'
+
+### ########################################################################################################################################################################################
+##class ComentInfo(models.Model):
+##    codinfo = models.AutoField(db_column='Codinfo', primary_key=True)
+##
+##    coment = models.ForeignKey(
+##        Coment,
+##        on_delete=models.CASCADE,
+##        db_column='Coment',
+##        related_name='infos',
+##        null=False,
+##        blank=False,
+##    )
+##
+##    titulo = models.CharField(
+##        db_column='Titulo',
+##        max_length=150,
+##        blank=True,
+##        null=True,
+##        help_text='Título curto (bom para renderizar links).'
+##    )
+##
+##    info = models.TextField(
+##        db_column='Info',
+##        null=False,
+##        blank=False,
+##        help_text='Texto longo ou URL.'
+##    )
+##
+##    class Meta:
+##        db_table = 'coment_info'
+##        ordering = ['codinfo']
+##
+##    @property
+##    def is_link(self) -> bool:
+##        val = (self.info or "").strip()
+##        if not val:
+##            return False
+##        v = URLValidator(schemes=["http", "https"])
+##        try:
+##            v(val)
+##            return True
+##        except ValidationError:
+##            return False
+##
+##    def __str__(self):
+##        return f'{self.coment.assunto} :: {self.titulo or self.info[:50]}'

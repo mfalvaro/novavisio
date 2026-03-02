@@ -12,9 +12,11 @@
 ##-----------------------------IMPORTS--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 from django.shortcuts import render, redirect, get_object_or_404
 
-from .models import Coment, Tema, TemaComent, Ci, Comp, CiComent, CompComent, ComentInfo
+from .models import Coment, Tema, Ci, Comp, Info, TemaComent, CiComent, CompComent, InfoComent, TemaCi, TemaComp, TemaInfo, TemaTema
 from django.db.models import Count, Case, When, Value, IntegerField
 from django.views import generic
+from django.db.models import Prefetch
+from django.db import transaction
 
 from novavisio import settings
 
@@ -23,37 +25,38 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import Group
 from django.contrib.auth import login
 from django.core.exceptions import PermissionDenied
-#from .mixins import AdminRequiredMixin  # (do jeito que você já usa)
 
 import locale
 
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
+from django.urls import reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 #acesso para as caixas de mensagem padrão do windows
 import ctypes
 
+from django import forms
 from eletronLab.forms import ComentCreateForm
 from eletronLab.forms import TemaComentCreateForm
 from eletronLab.forms import CiComentCreateForm
 from eletronLab.forms import CiComentNovoForm
 from eletronLab.forms import CompComentCreateForm
 from eletronLab.forms import CompComentNovoForm
+from eletronLab.forms import InfoComentCreateForm
+from eletronLab.forms import InfoComentNovoForm
 from eletronLab.forms import LeitorSignupForm
-from eletronLab.forms import ComentInfoForm
 
 from django.views import View
 from django.http import HttpResponse
 
-
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
-from django import forms
 
 
-#from django.views.generic import CreateView
+
+
 
 
 ##-----------------------------GLOBALS--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -95,7 +98,6 @@ def home_eLab(request):
 
     tmp1=Coment.objects.aggregate(Count('assunto', distinct=True))
     num_assuntos = tmp1['assunto__count']
-
 
     num_cis = Ci.objects.all().count()
 
@@ -235,8 +237,6 @@ class TemaListViewSorted(LoginRequiredMixin, generic.ListView):
         else:
             queryset = queryset.order_by(self.sort_str)
 
-
-
         return queryset
 
     # fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff----get_context_data
@@ -257,12 +257,39 @@ class TemaListViewSorted(LoginRequiredMixin, generic.ListView):
         context['filtro_cat_lst'] = self.filtro_cat_lst
         return context
 
-
 #  INDIVIDUAL VISUALIZAÇÃO ############################################################################################################   INDIVIDUAL VISUALIZAÇÃO
 class TemaDetailView(LoginRequiredMixin, generic.DetailView):
-    template_name = 'eletronLab/tema_detail.html'  # Specify your own template name/location
+    template_name = 'eletronLab/tema_detail.html'
     model = Tema
+    context_object_name = "tema"
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        tema = self.object
+
+        # Comentários reais (exclui vínculos antigos)
+        ctx["comentarios"] = (
+            TemaComent.objects
+            .filter(tema=tema)
+            .exclude(coment__assunto__in=["ci", "comp", "outro tema", "info"])
+            .select_related("coment")
+            .order_by("coment__assunto", "coment__detalhe")
+        )
+
+        # Relações novas
+        ctx["tema_cis"] = TemaCi.objects.filter(tema=tema).select_related("ci")
+        ctx["tema_comps"] = TemaComp.objects.filter(tema=tema).select_related("comp")
+        ctx["tema_infos"] = TemaInfo.objects.filter(tema=tema).select_related("info")
+
+        # ATENÇÃO AQUI: usa related_name
+        ctx["tema_temas"] = tema.relacoes_origem.select_related("tema_rel")
+
+        # Para os selects
+        ctx["all_cis"] = Ci.objects.all()
+        ctx["all_comps"] = Comp.objects.all()
+        ctx["all_infos"] = Info.objects.all()
+
+        return ctx
 
 #  INDIVIDUAL UPDATE ###################################################################################################################   INDIVIDUAL UPDATE
 class TemaUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
@@ -358,12 +385,10 @@ class ComentDetailView(generic.DetailView):
         paginator_comps = Paginator(qs_comps, 3)
         ctx['comps_page'] = paginator_comps.get_page(self.request.GET.get('cnpage'))
 
-
         # 4) INFOS complementares associados ao coment (coment_info)
-        qs_infos = ComentInfo.objects.filter(coment=self.object).order_by("codinfo")
+        qs_infos = InfoComent.objects.filter(coment=self.object).order_by("info")
         paginator_infos = Paginator(qs_infos, 3)
         ctx['infos_page'] = paginator_infos.get_page(self.request.GET.get('ipage'))
-
 
         return ctx
 
@@ -409,13 +434,12 @@ class ComentCreate(LoginRequiredMixin, AdminRequiredMixin, CreateView):
 class ComentUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
     permission_required = "eletronLab.change_coment"
     model = Coment
-    fields = ['assunto', 'detalhe']
+    fields = ['assunto', 'detalhe', 'obs']
 
     def get_form_class(self):
         form_class = super().get_form_class()
         form_class.base_fields['detalhe'].widget = forms.Textarea()
         return form_class
-
 
 # INDIVIDUAL DELETE ####################################################################################################################          INDIVIDUAL DELETE
 class ComentDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
@@ -430,7 +454,7 @@ class TemaComentDetailView(LoginRequiredMixin, generic.DetailView):
     model = TemaComent
     template_name = 'eletronLab/temacoment_detail.html'  # Specify your own template name/location
 
-#  INDIVIDUAL CREATE MULTIPLE ################################################################################################################        INDIVIDUAL CREATE MULTIPLE
+#  INDIVIDUAL CREATE  ################################################################################################################        INDIVIDUAL CREATE
 @login_required
 @permission_required("eletronLab.add_temacoment", raise_exception=True)
 def TemaComentCreate(request):
@@ -482,7 +506,6 @@ def TemaComentCreate(request):
 
     return redirect(reverse_lazy('tema-detail', kwargs={'pk': tema_obj.pk}))
 
-
 #  INDIVIDUAL DELETE ################################################################################################################        INDIVIDUAL DELETE
 class TemaComentDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
     permission_required = "eletronLab.delete_temacoment"
@@ -495,34 +518,692 @@ class TemaComentDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
         else:
             return reverse_lazy('tema-detail', kwargs={'pk': self.request.GET.get('tema',1)})
 
-##    OUTRO TEMA **********************************************************************************************************************************************************************    OUTRO TEMA
+##    CI *********************************************************************************************************************************************************************    CI
+#  LISTA VISUALIZAÇÃO  ################################################################################################################          LISTA VISUALIZAÇÃO
+def CiListView(request):
+    """View function for home ci page of site."""
+
+    num_cis = Ci.objects.all().count()
+
+    cis = Ci.objects.all()
+
+    context = {
+        'num_cis': num_cis,
+        'cis': cis,
+    }
+  # Render the HTML template index.html with the data in the context variable
+    return render(request, 'eletronLab/ci_list.html', context=context)
+
+#  INDIVIDUAL VISUALIZAÇÃO ############################################################################################################     INDIVIDUAL VISUALIZAÇÃO
+class CiDetailView(LoginRequiredMixin, generic.DetailView):
+    model = Ci
+    template_name = 'eletronLab/ci_detail.html'
+    context_object_name = 'ci'
+    slug_field = 'codci'
+    slug_url_kwarg = 'codci'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+
+        # 1) TEMAS associados ao CI (via coment principal do CI)
+        qs_temas = self.object.temaci_set.select_related('tema').all()
+        paginator_temas = Paginator(qs_temas, 7)
+        ctx['temas_page'] = paginator_temas.get_page(self.request.GET.get('tpage'))
+
+        # 2) COMENTÁRIOS associados ao CI (via tabela ci_coment)
+        qs_coments = self.object.cicoment_set.select_related('coment').all()
+        paginator_coments = Paginator(qs_coments, 7)
+        ctx['coments_page'] = paginator_coments.get_page(self.request.GET.get('cpage'))
+
+        return ctx
+
+#  INDIVIDUAL CREATE ################################################################################################################        INDIVIDUAL CREATE
+class CiCreate(LoginRequiredMixin, AdminRequiredMixin, CreateView):
+    permission_required = "eletronLab.add_ci"
+    model = Ci
+    fields = ['codci', 'semana', 'sobre']
+    success_url = reverse_lazy('cis')
+
+# INDIVIDUAL DELETE ####################################################################################################################          INDIVIDUAL DELETE
+class CiDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
+    permission_required = "eletronLab.delete_ci"
+    model = Ci
+    success_url = reverse_lazy('cis')
+
+# INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
+class CiUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
+    permission_required = "eletronLab.change_ci"
+    model = Ci
+    fields = ['codci', 'semana', 'sobre']
+    success_url = reverse_lazy('cis')
+
+
+##    CI COMENT ***********************************************************************************************************************************************************    CI COMENT
+#  INDIVIDUAL VISUALIZAÇÃO ##########################################################################################################  INDIVIDUAL VISUALIZAÇÃO
+class CiComentDetailView(LoginRequiredMixin, generic.DetailView):
+    model = CiComent
+    template_name = 'eletronLab/cicoment_detail.html'  # Specify your own template name/location
+
+#  INDIVIDUAL DELETE ################################################################################################################        INDIVIDUAL DELETE
+class CiComentDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
+    permission_required = "eletronLab.delete_cicoment"
+    model = CiComent
+    template_name = 'eletronLab/cicoment_confirm_delete.html'
+    success_url = reverse_lazy('home')  # fallback
+
+    def get_success_url(self):
+        return self.request.GET.get('next') or self.request.POST.get('next') or super().get_success_url()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['next'] = self.request.GET.get('next', '')
+        return ctx
+
+#  INDIVIDUAL CREATE  ################################################################################################################        INDIVIDUAL CREATE
 @login_required
-def OutroTema(request):
+@permission_required("eletronLab.add_cicoment", raise_exception=True)
+def CiComentCreate(request):
+    tmpCi = request.GET.get('ci', '')           # vindo do ci-detail
+    tmpComent = request.GET.get('coment', '')   # vindo do coment-detail
+    origin = request.GET.get('from', '')        # "coment" ou ""
 
-    # Captura do parâmetro outrotema da URL onde está a categoria do tema e sua respectiva página separadas por um espaço em branco
-    #A categoria em especial, "O laboratório 11" (por exemplo) deve ser parseada de forma distinta das demais,
-    #pois tem um len() igual a 3 e as demais tem um len() igual a dois
-    outrotema = request.GET.get('outrotema',"teoria 1") #caso não encontre retorna o padrão, Teoria 1
-    tmp1=outrotema.split()
-    if len(tmp1)==3:
-        tmpcat=tmp1[0]+ ' ' + tmp1[1] # categoria "O Laboratório"
-        tmppag=int(tmp1[2]) #página
-    else:
-        tmpcat=tmp1[0]# demais categoria
-        tmppag=int(tmp1[1])# página
+    # tenta obter o objeto CI se veio pelo GET
+    ci_obj = None
+    if tmpCi:
+        ci_obj = get_object_or_404(Ci, pk=tmpCi)
 
-    #queryset que recupera o respectivo tema a partir de sua categoria/pg
-    tmptema = Tema.objects.filter(categoria__iexact=tmpcat).filter(pagina__exact=tmppag)
+    if request.method == 'GET':
+        initial = {}
+        if tmpCi:
+            initial['ci'] = tmpCi
+        if tmpComent:
+            initial['coment'] = tmpComent
 
-    #em caso de algum problema retorna um queryset com o primeiro tema "Teoria 1"
-    if len(tmptema)!=1:
-        tmptema = Tema.objects.filter(categoria__iexact='teoria').filter(pagina__exact=1)
+        form = CiComentCreateForm(initial=initial)
+
+        # se veio do comentário, trava o campo coment (opcional)
+        if tmpComent and 'coment' in form.fields:
+            form.fields['coment'].disabled = True
+
+        # se veio do ci-detail, trava o campo ci (opcional)
+        if tmpCi and 'ci' in form.fields:
+            form.fields['ci'].disabled = True
+
+        return render(request, 'eletronLab/cicoment_form.html', {
+            'form': form,
+            'ci': ci_obj,   # se o template usa isso para título etc.
+        })
+
+    # POST
+    post_data = request.POST.copy()
+
+    # se o campo estava disabled ele não vem no POST -> injeta
+    if tmpComent:
+        post_data['coment'] = tmpComent
+    if tmpCi:
+        post_data['ci'] = tmpCi
+
+    form = CiComentCreateForm(post_data)
+    if not form.is_valid():
+        # re-disable para continuar travado na tela
+        if tmpComent and 'coment' in form.fields:
+            form.fields['coment'].disabled = True
+        if tmpCi and 'ci' in form.fields:
+            form.fields['ci'].disabled = True
+
+        return render(request, 'eletronLab/cicoment_form.html', {
+            'form': form,
+            'ci': ci_obj,
+        })
+
+    ci_obj = form.cleaned_data['ci']
+    coment_obj = form.cleaned_data['coment']
+
+    cicoment, created = CiComent.objects.get_or_create(
+        ci=ci_obj,
+        coment=coment_obj,
+    )
+
+    # redirect conforme origem
+    if origin == 'coment' and tmpComent:
+        return redirect(reverse_lazy('coment-detail', kwargs={'pk': tmpComent}))
+
+    return redirect(reverse_lazy('ci-detail', kwargs={'pk': ci_obj.pk}))
 
 
-    # Render the HTML template e redireciona para o tema recuperado tema/id que por sua vez é
-    #direcionada para TemaDetailView()
-    return redirect(tmptema[0])
+#  INDIVIDUAL CREATE  ALTERNATIVO ################################################################################################################        INDIVIDUAL CREATE ALTERNATIVO
+@login_required
+@permission_required("eletronLab.add_cicoment", raise_exception=True)
+def CiComentNovoCreate(request):
+    codci = request.GET.get('ci')
+    ci_obj = get_object_or_404(Ci, pk=codci)
 
+    if request.method == 'GET':
+        form = CiComentNovoForm()
+        return render(request, 'eletronLab/cicoment_form.html', {'form': form, 'ci': ci_obj})
+
+    form = CiComentNovoForm(request.POST)
+    if not form.is_valid():
+        return render(request, 'eletronLab/cicoment_form.html', {'form': form, 'ci': ci_obj})
+
+    # 1) cria o comentário
+    coment_obj = Coment.objects.create(
+        assunto=form.cleaned_data['assunto'],
+        detalhe=form.cleaned_data.get('detalhe', ''),
+        obs=form.cleaned_data.get('obs')
+   )
+
+    # 2) cria a associação com obs
+    CiComent.objects.create(
+        ci=ci_obj,
+        coment=coment_obj,
+    )
+
+    return redirect(reverse_lazy('ci-detail', kwargs={'pk': ci_obj.pk}))
+
+##    COMPONENTE ******************************************************************************************************************************************************    COMPONENTE
+#  LISTA VISUALIZAÇÃO  ################################################################################################################          LISTA VISUALIZAÇÃO
+def CompListView(request):
+    """View function for home comp page of site."""
+
+    num_comps = Comp.objects.all().count()
+
+    comps = Comp.objects.all()
+
+    context = {
+        'num_comps': num_comps,
+        'comps': comps,
+    }
+    return render(request, 'eletronLab/comp_list.html', context=context)
+
+#  INDIVIDUAL VISUALIZAÇÃO ############################################################################################################     INDIVIDUAL VISUALIZAÇÃO
+class CompDetailView(LoginRequiredMixin, generic.DetailView):
+    model = Comp
+    template_name = 'eletronLab/comp_detail.html'
+    context_object_name = 'comp'
+    slug_field = 'codcomp'
+    slug_url_kwarg = 'codcomp'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+
+        # 1) TEMAS associados ao Componente (via coment principal do Comp)
+        qs_temas = self.object.temacomp_set.select_related('tema').all()
+        paginator_temas = Paginator(qs_temas, 7)
+        ctx['temas_page'] = paginator_temas.get_page(self.request.GET.get('tpage'))
+
+        # 2) COMENTÁRIOS associados ao Componente (via tabela comp_coment)
+        qs_coments = self.object.compcoment_set.select_related('coment').all()
+        paginator_coments = Paginator(qs_coments, 7)
+        ctx['coments_page'] = paginator_coments.get_page(self.request.GET.get('cpage'))
+
+        return ctx
+
+#  INDIVIDUAL CREATE ################################################################################################################        INDIVIDUAL CREATE
+class CompCreate(LoginRequiredMixin, AdminRequiredMixin, CreateView):
+    permission_required = "eletronLab.add_comp"
+    model = Comp
+    fields = ['codcomp', 'sobre']
+    success_url = reverse_lazy('comps')
+
+# INDIVIDUAL DELETE ####################################################################################################################          INDIVIDUAL DELETE
+class CompDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
+    permission_required = "eletronLab.delete_comp"
+    model = Comp
+    success_url = reverse_lazy('comps')
+
+# INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
+class CompUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
+    permission_required = "eletronLab.change_comp"
+    model = Comp
+    fields = ['codcomp', 'sobre']
+    success_url = reverse_lazy('comps')
+
+    def get_form_class(self):
+        form_class = super().get_form_class()
+        form_class.base_fields['sobre'].widget = forms.Textarea()
+        return form_class
+
+##    COMP COMENT ***********************************************************************************************************************************************************    COMP COMENT
+#  INDIVIDUAL VISUALIZAÇÃO ##########################################################################################################  INDIVIDUAL VISUALIZAÇÃO
+class CompComentDetailView(LoginRequiredMixin, generic.DetailView):
+    model = CompComent
+    template_name = 'eletronLab/compcoment_detail.html'  # Specify your own template name/location
+
+#  INDIVIDUAL DELETE ################################################################################################################        INDIVIDUAL DELETE
+class CompComentDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
+    permission_required = "eletronLab.delete_compcoment"
+    model = CompComent
+    template_name = 'eletronLab/compcoment_confirm_delete.html'
+    success_url = reverse_lazy('home')  # fallback
+
+    def get_success_url(self):
+        return self.request.GET.get('next') or self.request.POST.get('next') or super().get_success_url()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['next'] = self.request.GET.get('next', '')
+        return ctx
+
+
+#  INDIVIDUAL CREATE  ################################################################################################################        INDIVIDUAL CREATE
+@login_required
+@permission_required("eletronLab.add_compcoment", raise_exception=True)
+def CompComentCreate(request):
+    codcomp = request.GET.get('comp', '')        # vindo do comp-detail
+    tmpComent = request.GET.get('coment', '')    # vindo do coment-detail
+    origin = request.GET.get('from', '')         # "coment" ou ""
+
+    comp_obj = None
+    if codcomp:
+        comp_obj = get_object_or_404(Comp, pk=codcomp)
+
+    if request.method == 'GET':
+        initial = {}
+        if codcomp:
+            initial['comp'] = codcomp
+        if tmpComent:
+            initial['coment'] = tmpComent
+
+        form = CompComentCreateForm(initial=initial)
+
+        # opcional: trava os campos quando já vierem definidos
+        if codcomp and 'comp' in form.fields:
+            form.fields['comp'].disabled = True
+        if tmpComent and 'coment' in form.fields:
+            form.fields['coment'].disabled = True
+
+        return render(request, 'eletronLab/compcoment_form.html', {
+            'form': form,
+            'comp': comp_obj,
+        })
+
+    # POST
+    post_data = request.POST.copy()
+
+    # campos disabled não vão no POST -> injeta
+    if codcomp:
+        post_data['comp'] = codcomp
+    if tmpComent:
+        post_data['coment'] = tmpComent
+
+    form = CompComentCreateForm(post_data)
+    if not form.is_valid():
+        if codcomp and 'comp' in form.fields:
+            form.fields['comp'].disabled = True
+        if tmpComent and 'coment' in form.fields:
+            form.fields['coment'].disabled = True
+
+        return render(request, 'eletronLab/compcoment_form.html', {
+            'form': form,
+            'comp': comp_obj,
+        })
+
+    comp_obj = form.cleaned_data['comp']
+    coment_obj = form.cleaned_data['coment']
+
+    compcoment, created = CompComent.objects.get_or_create(
+        comp=comp_obj,
+        coment=coment_obj,
+    )
+
+    # redirect conforme origem
+    if origin == 'coment' and tmpComent:
+        return redirect(reverse_lazy('coment-detail', kwargs={'pk': tmpComent}))
+
+    return redirect(reverse_lazy('comp-detail', kwargs={'pk': comp_obj.pk}))
+
+
+#  INDIVIDUAL CREATE  ALTERNATIVO ################################################################################################################        INDIVIDUAL CREATE ALTERNATIVO
+@login_required
+@permission_required("eletronLab.add_compcoment", raise_exception=True)
+def CompComentNovoCreate(request):
+    codcomp = request.GET.get('comp')
+    comp_obj = get_object_or_404(Comp, pk=codcomp)
+
+    if request.method == 'GET':
+        form = CompComentNovoForm()
+        return render(request, 'eletronLab/compcoment_form.html', {'form': form, 'comp': comp_obj})
+
+    form = CompComentNovoForm(request.POST)
+    if not form.is_valid():
+        return render(request, 'eletronLab/compcoment_form.html', {'form': form, 'comp': comp_obj})
+
+    # 1) cria o comentário
+    coment_obj = Coment.objects.create(
+        assunto=form.cleaned_data['assunto'],
+        detalhe=form.cleaned_data.get('detalhe', ''),
+        obs=form.cleaned_data.get('obs', '')
+   )
+
+    # 2) cria a associação com obs
+    CompComent.objects.create(
+        comp=comp_obj,
+        coment=coment_obj,
+    )
+
+    return redirect(reverse_lazy('comp-detail', kwargs={'pk': comp_obj.pk}))
+
+##    INFO ***********************************************************************************************************************************************************    INFO
+#  LISTA VISUALIZAÇÃO  ################################################################################################################          LISTA VISUALIZAÇÃO
+def InfoListView(request):
+    """View function for home comp page of site."""
+
+    num_infos = Info.objects.all().count()
+
+    infos = Info.objects.all()
+
+    context = {
+        'num_infos': num_infos,
+        'infos': infos,
+    }
+    return render(request, 'eletronLab/info_list.html', context=context)
+
+#  INDIVIDUAL VISUALIZAÇÃO ############################################################################################################     INDIVIDUAL VISUALIZAÇÃO
+class InfoDetailView(LoginRequiredMixin, generic.DetailView):
+    model = Info
+    template_name = 'eletronLab/info_detail.html'
+    context_object_name = 'info'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+
+        qs_temas = self.object.temainfo_set.select_related('tema').all()
+        ctx['temas_page'] = Paginator(qs_temas, 7).get_page(self.request.GET.get('tpage'))
+
+        qs_coments = self.object.infocoment_set.select_related('coment').all()
+        ctx['coments_page'] = Paginator(qs_coments, 7).get_page(self.request.GET.get('cpage'))
+
+        return ctx
+
+
+#  INDIVIDUAL CREATE ################################################################################################################        INDIVIDUAL CREATE
+class InfoCreate(LoginRequiredMixin, AdminRequiredMixin, CreateView):
+    permission_required = "eletronLab.add_info"
+    model = Info
+    fields = ['codinfo', 'titulo', 'sobre']
+    success_url = reverse_lazy('infos')
+
+# INDIVIDUAL DELETE ####################################################################################################################          INDIVIDUAL DELETE
+class InfoDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
+    permission_required = "eletronLab.delete_info"
+    model = Info
+    success_url = reverse_lazy('infos')
+
+# INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
+class InfoUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
+    permission_required = "eletronLab.change_info"
+    model = Info
+    fields = ['codinfo', 'titulo', 'sobre']
+    success_url = reverse_lazy('infos')
+
+##    INFO COMENT ***********************************************************************************************************************************************************    INFO COMENT
+#  INDIVIDUAL VISUALIZAÇÃO ##########################################################################################################  INDIVIDUAL VISUALIZAÇÃO
+class InfoComentDetailView(LoginRequiredMixin, generic.DetailView):
+    model = InfoComent
+    template_name = 'eletronLab/infocoment_detail.html'  # Specify your own template name/location
+
+#  INDIVIDUAL DELETE ################################################################################################################        INDIVIDUAL DELETE
+class InfoComentDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
+    permission_required = "eletronLab.delete_infocoment"
+    model = InfoComent
+    template_name = 'eletronLab/infocoment_confirm_delete.html'
+    success_url = reverse_lazy('home')  # fallback
+
+    def get_success_url(self):
+        return self.request.GET.get('next') or self.request.POST.get('next') or super().get_success_url()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['next'] = self.request.GET.get('next', '')
+        return ctx
+
+
+#  INDIVIDUAL CREATE  ################################################################################################################        INDIVIDUAL CREATE
+@login_required
+@permission_required("eletronLab.add_infocoment", raise_exception=True)
+def InfoComentCreate(request):
+    codinfo = request.GET.get('info', '')        # vindo do info-detail
+    tmpComent = request.GET.get('coment', '')    # vindo do coment-detail
+    origin = request.GET.get('from', '')         # "coment" ou ""
+
+    info_obj = None
+    if info_obj:
+        info_obj = get_object_or_404(Info, pk=codinfo)
+
+    if request.method == 'GET':
+        initial = {}
+        if codinfo:
+            initial['info'] = codinfo
+        if tmpComent:
+            initial['coment'] = tmpComent
+
+        form = InfoComentCreateForm(initial=initial)
+
+        # opcional: trava os campos quando já vierem definidos
+        if codinfo and 'info' in form.fields:
+            form.fields['info'].disabled = True
+        if tmpComent and 'coment' in form.fields:
+            form.fields['coment'].disabled = True
+
+        return render(request, 'eletronLab/compcoment_form.html', {
+            'form': form,
+            'info': info_obj,
+        })
+
+    # POST
+    post_data = request.POST.copy()
+
+    # campos disabled não vão no POST -> injeta
+    if codinfo:
+        post_data['info'] = codinfo
+    if tmpComent:
+        post_data['coment'] = tmpComent
+
+    form = InfoComentCreateForm(post_data)
+    if not form.is_valid():
+        if codinfo and 'info' in form.fields:
+            form.fields['info'].disabled = True
+        if tmpComent and 'coment' in form.fields:
+            form.fields['coment'].disabled = True
+
+        return render(request, 'eletronLab/compcoment_form.html', {
+            'form': form,
+            'info': info_obj,
+        })
+
+    info_obj = form.cleaned_data['info']
+    coment_obj = form.cleaned_data['coment']
+
+    infocoment, created = InfoComent.objects.get_or_create(
+        info=info_obj,
+        coment=coment_obj,
+    )
+
+    # redirect conforme origem
+    if origin == 'coment' and tmpComent:
+        return redirect(reverse_lazy('coment-detail', kwargs={'pk': tmpComent}))
+
+    return redirect(reverse_lazy('info-detail', kwargs={'pk': info_obj.pk}))
+
+
+#  INDIVIDUAL CREATE  ALTERNATIVO ################################################################################################################        INDIVIDUAL CREATE ALTERNATIVO
+@login_required
+@permission_required("eletronLab.add_infocoment", raise_exception=True)
+def InfoComentNovoCreate(request):
+    codinfo = request.GET.get('info')
+    info_obj = get_object_or_404(Info, pk=codinfo)
+
+    if request.method == 'GET':
+        form = InfoComentNovoForm()
+        return render(request, 'eletronLab/infocoment_form.html', {'form': form, 'info': info_obj})
+
+    form = InfoComentNovoForm(request.POST)
+    if not form.is_valid():
+        return render(request, 'eletronLab/infocoment_form.html', {'form': form, 'info': info_obj})
+
+    # 1) cria o comentário
+    coment_obj = Coment.objects.create(
+        assunto=form.cleaned_data['assunto'],
+        detalhe=form.cleaned_data.get('detalhe', ''),
+        obs=form.cleaned_data.get('obs')
+   )
+
+    # 2) cria a associação com obs
+    InfoComent.objects.create(
+        info=info_obj,
+        coment=coment_obj,
+    )
+
+    return redirect(reverse_lazy('info-detail', kwargs={'pk': info_obj.pk}))
+
+
+
+##    TEMA2 ***********************************************************************************************************************************************************    TEMA2
+#  ################################################################################################################
+@login_required
+def TemaCiDelete(request, pk):
+    obj = get_object_or_404(TemaCi, pk=pk)
+    tema_id = obj.tema_id
+    obj.delete()
+    return redirect("tema-detail", pk=tema_id)
+
+#  ################################################################################################################
+@login_required
+def TemaCompDelete(request, pk):
+    obj = get_object_or_404(TemaComp, pk=pk)
+    tema_id = obj.tema_id
+    obj.delete()
+    return redirect("tema-detail", pk=tema_id)
+
+#  ################################################################################################################
+@login_required
+def TemaInfoDelete(request, pk):
+    obj = get_object_or_404(TemaInfo, pk=pk)
+    tema_id = obj.tema_id
+    obj.delete()
+    return redirect("tema-detail", pk=tema_id)
+
+#  ################################################################################################################
+@login_required
+def TemaTemaDelete(request, pk):
+    obj = get_object_or_404(TemaTema, pk=pk)
+    tema_id = obj.tema_id
+    tema_rel_id = obj.tema_rel_id
+
+    # apaga o par simétrico também, se existir
+    obj.delete()
+    TemaTema.objects.filter(tema_id=tema_rel_id, tema_rel_id=tema_id).delete()
+
+    return redirect("tema-detail", pk=tema_id)
+
+#  ################################################################################################################
+class TemaCiCreateView(LoginRequiredMixin, generic.CreateView):
+    model = TemaCi
+    fields = ["ci"]
+    template_name = "eletronLab/tema_ci_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.tema = get_object_or_404(Tema, pk=kwargs["tema_pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.tema = self.tema
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return self.tema.get_absolute_url()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["tema"] = self.tema
+        return ctx
+
+#  ################################################################################################################
+class TemaCompCreateView(LoginRequiredMixin, generic.CreateView):
+    model = TemaComp
+    fields = ["comp"]
+    template_name = "eletronLab/tema_comp_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.tema = get_object_or_404(Tema, pk=kwargs["tema_pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.tema = self.tema
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return self.tema.get_absolute_url()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["tema"] = self.tema
+        return ctx
+
+#  ################################################################################################################
+class TemaInfoCreateView(LoginRequiredMixin, generic.CreateView):
+    model = TemaInfo
+    fields = ["info"]
+    template_name = "eletronLab/tema_info_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.tema = get_object_or_404(Tema, pk=kwargs["tema_pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.tema = self.tema
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return self.tema.get_absolute_url()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["tema"] = self.tema
+        return ctx
+
+class TemaTemaCreateView(LoginRequiredMixin, generic.CreateView):
+    model = TemaTema
+    fields = ["tema_rel"]  # NÃO deixe o usuário escolher o "tema" aqui
+    template_name = "eletronLab/tema_tema_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.tema = get_object_or_404(Tema, pk=request.GET.get("tema"))
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_initial(self):
+        return {"tema": self.tema}
+
+    def form_valid(self, form):
+        tema = self.tema
+        tema_rel = form.cleaned_data["tema_rel"]
+
+        if tema_rel == tema:
+            form.add_error("tema_rel", "Não pode relacionar um tema com ele mesmo.")
+            return self.form_invalid(form)
+
+        with transaction.atomic():
+            TemaTema.objects.get_or_create(tema=tema, tema_rel=tema_rel)
+            TemaTema.objects.get_or_create(tema=tema_rel, tema_rel=tema)
+
+        return redirect("tema-detail", pk=tema.pk)
+
+##    LOGIN ***********************************************************************************************************************************************************    LOGIN
+#  ##########################################################################################################
+class LeitorSignupView(CreateView):
+    form_class = LeitorSignupForm
+    template_name = "registration/signup.html"
+    success_url = reverse_lazy("home_eLab")  # ajuste para sua home real
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        grupo, _ = Group.objects.get_or_create(name="Leitor")
+        self.object.groups.add(grupo)
+        login(self.request, self.object)  # opcional: auto-login
+        return response
+
+##    SEARCH *********************************************************************************************************************************************************************    SEARCH
 #  LISTA VISUALIZAÇÃO  ##############################################################################################################      LISTA VISUALIZAÇÃO
 class SearchListView(LoginRequiredMixin, generic.ListView):
     template_name = 'eletronLab/search_list.html'  # Specify your own template name/location
@@ -614,506 +1295,3 @@ class SearchListView(LoginRequiredMixin, generic.ListView):
         return context
 
 
-##    CI *********************************************************************************************************************************************************************    CI
-#  LISTA VISUALIZAÇÃO  ################################################################################################################          LISTA VISUALIZAÇÃO
-def CiListView(request):
-    """View function for home ci page of site."""
-
-    num_cis = Ci.objects.all().count()
-
-    cis = Ci.objects.all()
-
-    context = {
-        'num_cis': num_cis,
-        'cis': cis,
-    }
-  # Render the HTML template index.html with the data in the context variable
-    return render(request, 'eletronLab/ci_list.html', context=context)
-
-#  INDIVIDUAL VISUALIZAÇÃO ############################################################################################################     INDIVIDUAL VISUALIZAÇÃO
-class CiDetailView(LoginRequiredMixin, generic.DetailView):
-    model = Ci
-    template_name = 'eletronLab/ci_detail.html'
-    context_object_name = 'ci'
-    slug_field = 'codci'
-    slug_url_kwarg = 'codci'
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-
-        # 1) TEMAS associados ao CI (via coment principal do CI)
-        qs_temas = self.object.coment.temacoment_set.select_related('tema').all()
-        paginator_temas = Paginator(qs_temas, 7)
-        ctx['temas_page'] = paginator_temas.get_page(self.request.GET.get('tpage'))
-
-        # 2) COMENTÁRIOS associados ao CI (via tabela ci_coment)
-        qs_coments = self.object.cicoment_set.select_related('coment').all()
-        paginator_coments = Paginator(qs_coments, 7)
-        ctx['coments_page'] = paginator_coments.get_page(self.request.GET.get('cpage'))
-
-        return ctx
-
-#  INDIVIDUAL CREATE ################################################################################################################        INDIVIDUAL CREATE
-class CiCreate(LoginRequiredMixin, AdminRequiredMixin, CreateView):
-    permission_required = "eletronLab.add_ci"
-    model = Ci
-    fields = ['codci', 'semana', 'sobre','coment']
-    success_url = reverse_lazy('cis')
-
-# INDIVIDUAL DELETE ####################################################################################################################          INDIVIDUAL DELETE
-class CiDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
-    permission_required = "eletronLab.delete_ci"
-    model = Ci
-    success_url = reverse_lazy('cis')
-
-# INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
-class CiUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
-    permission_required = "eletronLab.change_ci"
-    model = Ci
-    fields = ['codci', 'semana', 'sobre','coment']
-    success_url = reverse_lazy('cis')
-
-
-
-##    CI COMENT ***********************************************************************************************************************************************************    CI COMENT
-#  INDIVIDUAL VISUALIZAÇÃO ##########################################################################################################  INDIVIDUAL VISUALIZAÇÃO
-class CiComentDetailView(LoginRequiredMixin, generic.DetailView):
-    model = CiComent
-    template_name = 'eletronLab/cicoment_detail.html'  # Specify your own template name/location
-
-# INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
-class CiComentUpdate(UpdateView):
-    model = CiComent
-    fields = ['ci','coment','obs']  # recomendo editar só obs aqui
-    template_name = 'eletronLab/cicoment_form.html'
-
-    def get_form_class(self):
-        form_class = super().get_form_class()
-        form_class.base_fields['obs'].widget = forms.Textarea()
-        return form_class
-
-    def get_success_url(self):
-        return reverse_lazy(
-            'ci-detail',
-            kwargs={'pk': self.object.ci.pk}
-        )
-
-#  INDIVIDUAL DELETE ################################################################################################################        INDIVIDUAL DELETE
-class CiComentDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
-    permission_required = "eletronLab.delete_cicoment"
-    model = CiComent
-    template_name = 'eletronLab/cicoment_confirm_delete.html'
-    success_url = reverse_lazy('home')  # fallback
-
-    def get_success_url(self):
-        return self.request.GET.get('next') or self.request.POST.get('next') or super().get_success_url()
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['next'] = self.request.GET.get('next', '')
-        return ctx
-
-
-#  INDIVIDUAL CREATE  ################################################################################################################        INDIVIDUAL CREATE
-@login_required
-@permission_required("eletronLab.add_cicoment", raise_exception=True)
-def CiComentCreate(request):
-    tmpCi = request.GET.get('ci', '')           # vindo do ci-detail
-    tmpComent = request.GET.get('coment', '')   # vindo do coment-detail
-    origin = request.GET.get('from', '')        # "coment" ou ""
-
-    # tenta obter o objeto CI se veio pelo GET
-    ci_obj = None
-    if tmpCi:
-        ci_obj = get_object_or_404(Ci, pk=tmpCi)
-
-    if request.method == 'GET':
-        initial = {}
-        if tmpCi:
-            initial['ci'] = tmpCi
-        if tmpComent:
-            initial['coment'] = tmpComent
-
-        form = CiComentCreateForm(initial=initial)
-
-        # se veio do comentário, trava o campo coment (opcional)
-        if tmpComent and 'coment' in form.fields:
-            form.fields['coment'].disabled = True
-
-        # se veio do ci-detail, trava o campo ci (opcional)
-        if tmpCi and 'ci' in form.fields:
-            form.fields['ci'].disabled = True
-
-        return render(request, 'eletronLab/cicoment_form.html', {
-            'form': form,
-            'ci': ci_obj,   # se o template usa isso para título etc.
-        })
-
-    # POST
-    post_data = request.POST.copy()
-
-    # se o campo estava disabled ele não vem no POST -> injeta
-    if tmpComent:
-        post_data['coment'] = tmpComent
-    if tmpCi:
-        post_data['ci'] = tmpCi
-
-    form = CiComentCreateForm(post_data)
-    if not form.is_valid():
-        # re-disable para continuar travado na tela
-        if tmpComent and 'coment' in form.fields:
-            form.fields['coment'].disabled = True
-        if tmpCi and 'ci' in form.fields:
-            form.fields['ci'].disabled = True
-
-        return render(request, 'eletronLab/cicoment_form.html', {
-            'form': form,
-            'ci': ci_obj,
-        })
-
-    ci_obj = form.cleaned_data['ci']
-    coment_obj = form.cleaned_data['coment']
-    obs = form.cleaned_data.get('obs')
-
-    cicoment, created = CiComent.objects.get_or_create(
-        ci=ci_obj,
-        coment=coment_obj,
-        defaults={'obs': obs}
-    )
-
-    # se já existia, atualiza obs
-    if not created:
-        cicoment.obs = obs
-        cicoment.save(update_fields=['obs'])
-
-    # redirect conforme origem
-    if origin == 'coment' and tmpComent:
-        return redirect(reverse_lazy('coment-detail', kwargs={'pk': tmpComent}))
-
-    return redirect(reverse_lazy('ci-detail', kwargs={'pk': ci_obj.pk}))
-
-
-#  INDIVIDUAL CREATE  ALTERNATIVO ################################################################################################################        INDIVIDUAL CREATE ALTERNATIVO
-@login_required
-@permission_required("eletronLab.add_cicoment", raise_exception=True)
-def CiComentNovoCreate(request):
-    codci = request.GET.get('ci')
-    ci_obj = get_object_or_404(Ci, pk=codci)
-
-    if request.method == 'GET':
-        form = CiComentNovoForm()
-        return render(request, 'eletronLab/cicoment_form.html', {'form': form, 'ci': ci_obj})
-
-    form = CiComentNovoForm(request.POST)
-    if not form.is_valid():
-        return render(request, 'eletronLab/cicoment_form.html', {'form': form, 'ci': ci_obj})
-
-    # 1) cria o comentário
-    coment_obj = Coment.objects.create(
-        assunto=form.cleaned_data['assunto'],
-        detalhe=form.cleaned_data.get('detalhe', '')
-    )
-
-    # 2) cria a associação com obs
-    CiComent.objects.create(
-        ci=ci_obj,
-        coment=coment_obj,
-        obs=form.cleaned_data.get('obs')
-    )
-
-    return redirect(reverse_lazy('ci-detail', kwargs={'pk': ci_obj.pk}))
-
-##    COMPONENT ******************************************************************************************************************************************************    COMPONENT
-#  LISTA VISUALIZAÇÃO  ################################################################################################################          LISTA VISUALIZAÇÃO
-def CompListView(request):
-    """View function for home comp page of site."""
-
-    num_comps = Comp.objects.all().count()
-
-    comps = Comp.objects.all()
-
-    context = {
-        'num_comps': num_comps,
-        'comps': comps,
-    }
-    return render(request, 'eletronLab/comp_list.html', context=context)
-
-#  INDIVIDUAL VISUALIZAÇÃO ############################################################################################################     INDIVIDUAL VISUALIZAÇÃO
-class CompDetailView(LoginRequiredMixin, generic.DetailView):
-    model = Comp
-    template_name = 'eletronLab/comp_detail.html'
-    context_object_name = 'comp'
-    slug_field = 'codcomp'
-    slug_url_kwarg = 'codcomp'
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-
-        # 1) TEMAS associados ao Componente (via coment principal do Comp)
-        qs_temas = self.object.coment.temacoment_set.select_related('tema').all()
-        paginator_temas = Paginator(qs_temas, 7)
-        ctx['temas_page'] = paginator_temas.get_page(self.request.GET.get('tpage'))
-
-        # 2) COMENTÁRIOS associados ao Componente (via tabela comp_coment)
-        qs_coments = self.object.compcoment_set.select_related('coment').all()
-        paginator_coments = Paginator(qs_coments, 7)
-        ctx['coments_page'] = paginator_coments.get_page(self.request.GET.get('cpage'))
-
-        return ctx
-
-#  INDIVIDUAL CREATE ################################################################################################################        INDIVIDUAL CREATE
-class CompCreate(LoginRequiredMixin, AdminRequiredMixin, CreateView):
-    permission_required = "eletronLab.add_comp"
-    model = Comp
-    fields = ['codcomp', 'sobre', 'coment']
-    success_url = reverse_lazy('comps')
-
-# INDIVIDUAL DELETE ####################################################################################################################          INDIVIDUAL DELETE
-class CompDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
-    permission_required = "eletronLab.delete_comp"
-    model = Comp
-    success_url = reverse_lazy('comps')
-
-# INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
-class CompUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
-    permission_required = "eletronLab.change_comp"
-    model = Comp
-    fields = ['codcomp', 'sobre', 'coment']
-    success_url = reverse_lazy('comps')
-
-    def get_form_class(self):
-        form_class = super().get_form_class()
-        form_class.base_fields['sobre'].widget = forms.Textarea()
-        return form_class
-
-
-
-##    COMP COMENT ***********************************************************************************************************************************************************    COMP COMENT
-#  INDIVIDUAL VISUALIZAÇÃO ##########################################################################################################  INDIVIDUAL VISUALIZAÇÃO
-class CompComentDetailView(LoginRequiredMixin, generic.DetailView):
-    model = CompComent
-    template_name = 'eletronLab/compcoment_detail.html'  # Specify your own template name/location
-
-# INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
-class CompComentUpdate(UpdateView):
-    model = CompComent
-    fields = ['comp','coment','obs']  # recomendo editar só obs aqui
-    template_name = 'eletronLab/compcoment_form.html'
-
-    def get_form_class(self):
-        form_class = super().get_form_class()
-        form_class.base_fields['obs'].widget = forms.Textarea()
-        return form_class
-
-    def get_success_url(self):
-        return reverse_lazy(
-            'comp-detail',
-            kwargs={'pk': self.object.comp.pk}
-        )
-
-#  INDIVIDUAL DELETE ################################################################################################################        INDIVIDUAL DELETE
-class CompComentDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
-    permission_required = "eletronLab.delete_compcoment"
-    model = CompComent
-    template_name = 'eletronLab/compcoment_confirm_delete.html'
-    success_url = reverse_lazy('home')  # fallback
-
-    def get_success_url(self):
-        return self.request.GET.get('next') or self.request.POST.get('next') or super().get_success_url()
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['next'] = self.request.GET.get('next', '')
-        return ctx
-
-
-#  INDIVIDUAL CREATE  ################################################################################################################        INDIVIDUAL CREATE
-@login_required
-@permission_required("eletronLab.add_compcoment", raise_exception=True)
-def CompComentCreate(request):
-    codcomp = request.GET.get('comp', '')        # vindo do comp-detail
-    tmpComent = request.GET.get('coment', '')    # vindo do coment-detail
-    origin = request.GET.get('from', '')         # "coment" ou ""
-
-    comp_obj = None
-    if codcomp:
-        comp_obj = get_object_or_404(Comp, pk=codcomp)
-
-    if request.method == 'GET':
-        initial = {}
-        if codcomp:
-            initial['comp'] = codcomp
-        if tmpComent:
-            initial['coment'] = tmpComent
-
-        form = CompComentCreateForm(initial=initial)
-
-        # opcional: trava os campos quando já vierem definidos
-        if codcomp and 'comp' in form.fields:
-            form.fields['comp'].disabled = True
-        if tmpComent and 'coment' in form.fields:
-            form.fields['coment'].disabled = True
-
-        return render(request, 'eletronLab/compcoment_form.html', {
-            'form': form,
-            'comp': comp_obj,
-        })
-
-    # POST
-    post_data = request.POST.copy()
-
-    # campos disabled não vão no POST -> injeta
-    if codcomp:
-        post_data['comp'] = codcomp
-    if tmpComent:
-        post_data['coment'] = tmpComent
-
-    form = CompComentCreateForm(post_data)
-    if not form.is_valid():
-        if codcomp and 'comp' in form.fields:
-            form.fields['comp'].disabled = True
-        if tmpComent and 'coment' in form.fields:
-            form.fields['coment'].disabled = True
-
-        return render(request, 'eletronLab/compcoment_form.html', {
-            'form': form,
-            'comp': comp_obj,
-        })
-
-    comp_obj = form.cleaned_data['comp']
-    coment_obj = form.cleaned_data['coment']
-    obs = form.cleaned_data.get('obs')
-
-    compcoment, created = CompComent.objects.get_or_create(
-        comp=comp_obj,
-        coment=coment_obj,
-        defaults={'obs': obs}
-    )
-    if not created:
-        compcoment.obs = obs
-        compcoment.save(update_fields=['obs'])
-
-    # redirect conforme origem
-    if origin == 'coment' and tmpComent:
-        return redirect(reverse_lazy('coment-detail', kwargs={'pk': tmpComent}))
-
-    return redirect(reverse_lazy('comp-detail', kwargs={'pk': comp_obj.pk}))
-
-
-#  INDIVIDUAL CREATE  ALTERNATIVO ################################################################################################################        INDIVIDUAL CREATE ALTERNATIVO
-@login_required
-@permission_required("eletronLab.add_compcoment", raise_exception=True)
-def CompComentNovoCreate(request):
-    codcomp = request.GET.get('comp')
-    comp_obj = get_object_or_404(Comp, pk=codcomp)
-
-    if request.method == 'GET':
-        form = CompComentNovoForm()
-        return render(request, 'eletronLab/compcoment_form.html', {'form': form, 'comp': comp_obj})
-
-    form = CompComentNovoForm(request.POST)
-    if not form.is_valid():
-        return render(request, 'eletronLab/compcoment_form.html', {'form': form, 'comp': comp_obj})
-
-    # 1) cria o comentário
-    coment_obj = Coment.objects.create(
-        assunto=form.cleaned_data['assunto'],
-        detalhe=form.cleaned_data.get('detalhe', '')
-    )
-
-    # 2) cria a associação com obs
-    CompComent.objects.create(
-        comp=comp_obj,
-        coment=coment_obj,
-        obs=form.cleaned_data.get('obs')
-    )
-
-    return redirect(reverse_lazy('comp-detail', kwargs={'pk': comp_obj.pk}))
-
-
-#  ##########################################################################################################
-class LeitorSignupView(CreateView):
-    form_class = LeitorSignupForm
-    template_name = "registration/signup.html"
-    success_url = reverse_lazy("home_eLab")  # ajuste para sua home real
-
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        grupo, _ = Group.objects.get_or_create(name="Leitor")
-        self.object.groups.add(grupo)
-        login(self.request, self.object)  # opcional: auto-login
-        return response
-
-
-##    COMEMT INFO ***********************************************************************************************************************************************************    COMEMT INFO
-#  LISTA VISUALIZAÇÃO  ################################################################################################################          LISTA VISUALIZAÇÃO
-class ComentInfoByComentListView(LoginRequiredMixin, generic.ListView):
-    model = ComentInfo
-    template_name = 'eletronLab/comentinfo_list.html'
-    paginate_by = paginacao
-
-    def get_queryset(self):
-        self.coment = get_object_or_404(Coment, codcoment=self.kwargs["codcoment"])
-        return ComentInfo.objects.filter(coment=self.coment).order_by("codinfo")
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx["coment"] = self.coment
-        return ctx
-
-
-#  INDIVIDUAL CREATE ################################################################################################################        INDIVIDUAL CREATE
-class ComentInfoCreate(LoginRequiredMixin, AdminRequiredMixin, CreateView):
-    permission_required = "eletronLab.add_comentinfo"
-
-    def get(self, request, *args, **kwargs):
-        initial = {}
-        codcoment = request.GET.get("codcoment", "")
-        if codcoment:
-            initial["coment"] = get_object_or_404(Coment, codcoment=int(codcoment))
-        context = {"form": ComentInfoForm(initial=initial)}
-        return render(request, "eletronLab/comentinfo_form.html", context)
-
-    def post(self, request, *args, **kwargs):
-        form = ComentInfoForm(request.POST)
-        if form.is_valid():
-            obj = form.save()
-            # volta para o detalhe do comentário
-            return redirect(reverse_lazy("coment-detail", kwargs={"pk": obj.coment.codcoment}))
-        return render(request, "eletronLab/comentinfo_form.html", {"form": form})
-
-
-# INDIVIDUAL UPDATE ###################################################################################################################           INDIVIDUAL UPDATE
-class ComentInfoUpdate(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
-    permission_required = "eletronLab.change_comentinfo"
-    model = ComentInfo
-    form_class = ComentInfoForm
-    template_name = "eletronLab/comentinfo_form.html"
-
-    def get_success_url(self):
-        return reverse_lazy("coment-detail", kwargs={"pk": self.object.coment.codcoment})
-
-
-#  INDIVIDUAL DELETE ################################################################################################################        INDIVIDUAL DELETE
-class ComentInfoDelete(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
-    permission_required = "eletronLab.delete_comentinfo"
-    model = ComentInfo
-    template_name = "eletronLab/comentinfo_confirm_delete.html"
-
-    def get_success_url(self):
-        return reverse_lazy("coment-detail", kwargs={"pk": self.object.coment.codcoment})
-
-#  ################################################################################################################
-@method_decorator(never_cache, name='dispatch')
-class ComentComInfosListView(LoginRequiredMixin, generic.ListView):
-    model = Coment
-    template_name = "eletronLab/coment_com_infos_list.html"
-    paginate_by = paginacao
-
-    def get_queryset(self):
-        return (
-            Coment.objects
-                 .filter(infos__isnull=False)
-                 .distinct()
-                 .order_by("assunto", "detalhe")
-        )

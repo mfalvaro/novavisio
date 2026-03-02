@@ -15,7 +15,7 @@
 	<li><a href="{% url 'coments' %}">-  Comentários</a></li>
 	<li><a href="{% url 'cis' %}">-  Circuitos integrados</a></li>
 	<li><a href="{% url 'comps' %}">-  Componentes</a></li>
-	<li><a href="{% url 'coment-com-infos' %}">-  Infos</a></li>
+	<li><a href="{% url 'infos' %}">-  Infos</a></li>
 	<li><a href="{% url 'searchs' %}">-  Procurar</a></li>
 	<br>
 	<li>User: {{ user.get_username }}</li>
@@ -54,8 +54,11 @@
 		<li><strong>Número de ci´s estudados:</strong> {{ num_cis }}</li>
 	</ul>
 	<p>
-		<a href="{% url 'cis' %}">Circuitos integrados estudados</a></br>
+		<a href="{% url 'cis' %}">Circuitos integrados estudados</a>
+		</br>
 		<a href="{% url 'comps' %}">Componentes estudados</a>
+		</br>
+		<a href="{% url 'infos' %}">Infos/conceitos estudados</a>
 	</p>
 		</br>
 	<p>Número acessos a este link: {{ num_visits }} click{{ num_visits|pluralize }}</p>
@@ -85,6 +88,9 @@
 		<a href="{% url 'cis' %}">Circuitos integrados estudados</a>
 		</br>
 		<a href="{% url 'comps' %}">Componentes estudados</a>
+		</br>
+		<a href="{% url 'infos' %}">Infos/conceitos estudados</a>
+
 	</p>
 		</br>
 	<p>Número acessos a este link: {{ num_visits }} click{{ num_visits|pluralize }}</p>

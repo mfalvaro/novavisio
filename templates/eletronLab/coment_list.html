@@ -36,17 +36,9 @@
   {% if coment_list %}
 	<ul>
 		{% for c in coment_list %}
-		{% if c.assunto == 'outro tema' %}
+		{% if c.assunto == 'link' %}
 		<li>
-			<a href="{{ c.get_absolute_url }}">{{ c.assunto }}</a> :: <a href="{% url 'outro_tema' %}?outrotema={{ c.detalhe }}">{{ c.detalhe }}</a>
-		</li>
-		{% elif c.assunto == 'ci' %}
-		<li>
-			<a href="{% url 'ci-detail' c.detalhe %}">{{ c.assunto }}</a> :: <a href="{{ c.get_absolute_url }}">{{ c.detalhe }}</a>
-		</li>
-		{% elif c.assunto == 'comp' %}
-		<li>
-			<a href="{% url 'comp-detail' c.detalhe %}">{{ c.assunto }}</a> :: <a href="{{ c.get_absolute_url }}">{{ c.detalhe }}</a>
+			<a href="{{ c.get_absolute_url }}">{{ c.assunto }}</a> :: <a href="{{ c.obs }}">{{ c.detalhe }}</a>
 		</li>
 		{% elif c.assunto == 'projeto' %}
 		<li>
@@ -54,7 +46,7 @@
 		</li>
 		{% else %}
 		<li>
-			<a href="{{ c.get_absolute_url }}">{{ c.assunto }}::{{ c.detalhe }}</a>
+			<a href="{{ c.get_absolute_url }}">{{ c.assunto }}::{{ c.detalhe }}:::: {{ c.obs }}</a>
 		</li>
 		{% endif %}
 

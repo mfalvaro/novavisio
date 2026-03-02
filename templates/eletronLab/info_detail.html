@@ -1,16 +1,19 @@
 <!-- templates/estudoa/ci_detail.html-->
 {% extends 'eletronLab/home_eLab.html' %}
 
-{% block title %}eLab componente {{ comp.codcomp }}{% endblock %}
+{% block title %}eLab info {{ info.titulo }}{% endblock %}
 
 {% block content %}
 <!-- Add additional CSS, img in static files -->
 {% load static %}
 
-<p id="parag1">Componente: {{ comp.codcomp }}</p>
-<p>{{ comp.sobre }}</p>
-
-<p><a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/comp/comp_{{ comp.codcomp }}.jpg"><strong>Desenho/esquema do componente</strong></a> </p>
+<p id="parag1">
+    info: {{ info.titulo }}
+    {% if info.sobre %}
+    <br />
+    sobre: {{ info.sobre }}
+    {% endif %}
+</p>
 
 <!-- LISTA DE TEMAS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
 <div style="margin-left:20px;margin-top:20px">
@@ -20,12 +23,12 @@
     <ul>
         {% for tc in temas_page %}
         <li>
-            <a href="{{ tc.tema.get_absolute_url }}">{{ tc.tema.titulo }}</a> ({{ tc.tema.semana }}.{{ tc.tema.ordem }} - {{ tc.tema.categoria }}, {{ tc.tema.pagina }})
+            <a href="{{ tc.tema.get_absolute_url }}">{{ tc.tema.titulo }}</a> :: ({{ tc.tema.semana }}.{{ tc.tema.ordem }} - {{ tc.tema.categoria }}, {{ tc.tema.pagina }})
             :: ({{ tc.data|date:"j/n/y - G:i" }})
             <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/temas/tema{{ tc.tema.semana|stringformat:"02d" }}_{{ tc.tema.ordem }}.pdf"><img src="{% static 'res/' %}download2.jpg"></a>
         </li>
         {% empty %}
-        <p>Não há temas associados a este componente.</p>
+        <p>Não há temas associados a este info.</p>
         {% endfor %}
     </ul>
     <!-- PAGINATOR DE TEMAS **************************************************************************************************************** -->
@@ -44,9 +47,9 @@
 
     {% if temas_page.has_next %}
     <a href="?tpage={{ temas_page.next_page_number }}
- 		 {% if coments_page.number %}
-			 &cpage={{ coments_page.number }}
-		 {% endif %}
+        {% if coments_page.number %}
+            &cpage={{ coments_page.number }}
+        {% endif %}
        ">next</a>
     {% else %}
     next
@@ -61,10 +64,11 @@
     <p>
         <span id="parag1">Comentários associados</span>
         <span>&nbsp;&nbsp;</span>
-        <span id="parag2"><a href="{% url 'compcoment-create' %}?comp={{ comp.codcomp }}">+...</a></span>
+        <span id="parag2"><a href="{% url 'infocoment-create' %}?info={{ info.codinfo }}">+...</a></span>
         <span>&nbsp;&nbsp;</span>
-        <span id="parag2"><a href="{% url 'compcoment-novo-create' %}?comp={{ comp.codcomp }}">novo</a></span>
+        <span id="parag2"><a href="{% url 'infocoment-novo-create' %}?info={{ info.codinfo }}">novo</a></span>
     </p>
+
 
 
 
@@ -78,14 +82,14 @@
             :: {{ cc.coment.obs }}
             {% endif %}
             :: ({{ cc.data|date:"j/n/y - G:i" }})
-            <a href="{% url 'compcoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
+            <a href="{% url 'infocoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
         </li>
         {% elif cc.coment.assunto == 'link' %}
         <li>
             <a href="{{ cc.coment.get_absolute_url }}">{{ cc.coment.assunto }}</a> ::
             <a href="{{ cc.coment.obs }}">{{ cc.coment.detalhe }}</a>
             :: ({{ cc.data|date:"j/n/y - G:i" }})
-            <a href="{% url 'compcoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
+            <a href="{% url 'infocoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
         </li>
         {% else %}
         <li>
@@ -94,11 +98,11 @@
             :: {{ cc.coment.obs }}
             {% endif %}
             :: ({{ cc.data|date:"j/n/y - G:i" }})
-            <a href="{% url 'compcoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
+            <a href="{% url 'infocoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
         </li>
         {% endif %}
         {% empty %}
-        <p>Não há comentários associados a este ci.</p>
+        <p>Não há comentários associados a este info.</p>
         {% endfor %}
     </ul>
     <!-- PAGINATOR DE COMENTÁRIOS **************************************************************************************************************** -->
@@ -133,12 +137,11 @@
 
 
 
-
 {% endblock %}
 
 
 
-<a href="{% url 'compcoment-novo-create' %}?comp={{ comp.codcomp }}">Criar comp/coment novo...</a>
+<a href="{% url 'infocoment-novo-create' %}?info={{ info.codinfo }}">Criar info/coment novo...</a>
 
 
 

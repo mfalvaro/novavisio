@@ -14,11 +14,17 @@
 
 <!-- LISTA DE TEMAS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
 <div style="margin-left:20px;margin-top:20px">
-    <h4>Temas associados</h4>
+
+
+    <p>
+        <span id="parag1">Temas associados</span>
+    </p>
+
     <ul>
         {% for tc in temas_page %}
         <li>
-            <a href="{{ tc.tema.get_absolute_url }}">{{ tc.tema.titulo }}</a> ({{ tc.tema.semana }}.{{ tc.tema.ordem }} - {{ tc.tema.categoria }}, {{ tc.tema.pagina }})
+            <a href="{{ tc.tema.get_absolute_url }}">{{ tc.tema.titulo }}</a> :: ({{ tc.tema.semana }}.{{ tc.tema.ordem }} - {{ tc.tema.categoria }}, {{ tc.tema.pagina }})
+            :: ({{ tc.data|date:"j/n/y - G:i" }})
             <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/temas/tema{{ tc.tema.semana|stringformat:"02d" }}_{{ tc.tema.ordem }}.pdf"><img src="{% static 'res/' %}download2.jpg"></a>
         </li>
         {% empty %}
@@ -28,15 +34,27 @@
     <!-- PAGINATOR DE TEMAS **************************************************************************************************************** -->
     {% if temas_page.has_other_pages %}
     {% if temas_page.has_previous %}
-    <a href="?tpage={{ temas_page.previous_page_number }}">previous</a>
+    <a href="?tpage={{ temas_page.previous_page_number }}
+ 		 {% if coments_page.number %}
+			 &cpage={{ coments_page.number }}
+		 {% endif %}
+       ">previous</a>
     {% else %}
     previous
     {% endif %}
 
+
     Page {{ temas_page.number }} of {{ temas_page.paginator.num_pages }}
 
     {% if temas_page.has_next %}
-    <a href="?tpage={{ temas_page.next_page_number }}">next</a>
+    <a href="?tpage={{ temas_page.next_page_number }}
+ 		 {% if coments_page.number %}
+			 &cpage={{ coments_page.number }}
+		 {% endif %}
+      
+       
+       
+       ">next</a>
     {% else %}
     next
     {% endif %}
@@ -45,42 +63,39 @@
 
 <!-- LISTA DE COMENTÁRIOS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
 <div style="margin-left:20px;margin-top:20px">
-    <h4>Comentários associados</h4>
+    <p>
+        <span id="parag1">Comentários associados</span>
+        <span>&nbsp;&nbsp;</span>
+        <span id="parag2"><a href="{% url 'home_eLab' %}cicoments/create/?ci={{ ci.codci }}">+...</a></span>
+        <span>&nbsp;&nbsp;</span>
+        <span id="parag2"><a href="{% url 'cicoment-novo-create' %}?ci={{ ci.codci }}">novo</a></span>
+    </p>
 
     <ul>
         {% for cc in coments_page %}
-        {% if cc.coment.assunto == 'outro tema' %}
+        {% if cc.coment.assunto == 'projeto' %}
         <li>
             <a href="{{ cc.coment.get_absolute_url }}">{{ cc.coment.assunto }}</a> ::
-            <a href="{{ cc.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
-            <a href="{% url 'outro_tema' %}?outrotema={{ cc.coment.detalhe }}">{{ cc.coment.detalhe }}</a> :::: {{ cc.obs }}  ({{ cc.data|date:"j/n/y - G:i" }})
-            <a href="{% url 'cicoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
-        </li>
-        {% elif cc.coment.assunto == 'ci' %}
-        <li>
-            <a href="{% url 'ci-detail' cc.coment.detalhe %}">{{ cc.coment.assunto }}</a> ::
-            <a href="{{ cc.coment.get_absolute_url }}">{{ cc.coment.detalhe }}</a> :::: {{ cc.obs }}   ({{ cc.data|date:"j/n/y - G:i" }})
-            <a href="{{ cc.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
-            <a href="{% url 'cicoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
-        </li>
-        {% elif cc.coment.assunto == 'projeto' %}
-        <li>
-            <a href="{{ cc.coment.get_absolute_url }}">{{ cc.coment.assunto }}</a> ::
-            <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/projetos/{{ cc.coment.detalhe }}.jpg">{{ cc.coment.detalhe }}</a> :::: {{ cc.obs }}   ({{ cc.data|date:"j/n/y - G:i" }})
-            <a href="{{ cc.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
+            <a href="https://www.gpsgeologia.com.br/paginas/alvaro/eletronlab/projetos/{{ cc.coment.detalhe }}.jpg">{{ cc.coment.detalhe }}</a>
+            {% if cc.coment.obs %}
+            :: {{ cc.coment.obs }}
+            {% endif %}
+            :: ({{ cc.data|date:"j/n/y - G:i" }})
             <a href="{% url 'cicoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
         </li>
         {% elif cc.coment.assunto == 'link' %}
         <li>
             <a href="{{ cc.coment.get_absolute_url }}">{{ cc.coment.assunto }}</a> ::
-            <a href="{{ cc.obs }}">{{ cc.coment.detalhe }}</a> ::::  ({{ cc.data|date:"j/n/y - G:i" }})
-            <a href="{{ cc.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
+            <a href="{{ cc.coment.obs }}">{{ cc.coment.detalhe }}</a> ::  ({{ cc.data|date:"j/n/y - G:i" }})
             <a href="{% url 'cicoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
         </li>
         {% else %}
         <li>
-            <a href="{{ cc.coment.get_absolute_url }}">{{ cc.coment.assunto }} :: {{ cc.coment.detalhe }}</a> :::: {{ cc.obs }}   ({{ cc.data|date:"j/n/y - G:i" }})
-            <a href="{{ cc.get_absolute_url }}/update">  <img src="{% static 'res/' %}update.jpg"></a>
+            <a href="{{ cc.coment.get_absolute_url }}">{{ cc.coment.assunto }} :: {{ cc.coment.detalhe }}</a>
+            {% if cc.coment.obs %}
+            :: {{ cc.coment.obs }}
+            {% endif %}
+            :: ({{ cc.data|date:"j/n/y - G:i" }})
             <a href="{% url 'cicoment_delete' cc.pk %}?next={{ request.get_full_path|urlencode }}">  <img src="{% static 'res/' %}delete.png"></a>
         </li>
         {% endif %}
@@ -122,14 +137,6 @@
 <!-- BOTÕES PARA ASSOCIAR COMENTÁRIOS NOVOS **************************************************************************************************************** -->
 <br>
 <br>
-<div>
-    <a href="{% url 'home_eLab' %}cicoments/create/?ci={{ ci.codci }}">Criar ci/coment existente...</a>
-</div>
-<div id="fim_de_pagina1">
-    <a href="{% url 'cicoment-novo-create' %}?ci={{ ci.codci }}">Criar ci/coment novo...</a>
-    <br>
-    <br>
-</div>
 
 
 {% endblock %}
